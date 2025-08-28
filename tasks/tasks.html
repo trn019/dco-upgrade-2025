@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./tasks.css">
+    <title>Tasks</title>
+</head>
+<body>
+    <script src="./tasks.js"></script>
+    <div id="iphone-12-pro">
+        <div class="tab-header">
+            <a href="tab active">Tasks By Day</a>
+            <a href="tab">Rooms</a>
+        </div>
+
+        <div class="day-selector">
+            <div class="day-item active">
+                <p class="day-abbr">THU</p>
+                <p class="day-abbr">14</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">FRI</p>
+                <p class="day-abbr">15</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">SAT</p>
+                <p class="day-abbr">16</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">SUN</p>
+                <p class="day-abbr">17</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">MON</p>
+                <p class="day-abbr">18</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">TUE</p>
+                <p class="day-abbr">19</p>
+            </div>
+            <div class="day-item">
+                <p class="day-abbr">WED</p>
+                <p class="day-abbr">20</p>
+            </div>
+            <button class="expand-icon">
+                <img src="./tasks-img/arrows_output.png" alt="">
+            </button>
+        </div>
+
+        <div class="auto-sanitize">
+            <p>
+                Overwhelmed? Don't know where to start? Let me choose a random task!
+            </p>
+            <button>
+                <img src="./tasks-img/shuffle.png" alt="">
+            </button>
+        </div>
+        <div class="sort-container">
+            <button class="sort-btn">
+                Sort by ⌄
+            </button>
+        </div>
+
+        <section class="room">
+            <h2>Bedroom</h2>
+            <div class="task-item">
+                <div class="task-header">
+                    <h3>Vacuum Floor</h3>
+                    <!-- <h4>One-time Task</h4> -->
+                </div>
+                <div class="task-info">
+                    <p>cleaned 3 weeks ago</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill progress-red"></div>
+                    </div>
+                    <p class="status-text">Uh oh...</p>
+                </div>
+                <div class="task-frequency">
+                    <span><img src="./tasks-img/repeat.png" alt=""></span>
+                    <span>Every week</span>
+                </div>
+            </div>
+
+            <div class="task-item">
+                <div class="task-header">
+                    <h3>Organize Closet</h3>
+                    <h4>Recurring Task</h4>
+                </div>
+                <div class="task-info">
+                    <p>cleaned 3 weeks ago</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill progress-yellow"></div>
+                    </div>
+                    <p class="status-text">Getting dusty...</p>
+                </div>
+                <div class="task-frequency">
+                    <span><img src="./tasks-img/repeat.png" alt=""></span>
+                    <span>Every month</span>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="room">
+            <h2>Kitchen</h2>
+        </section>
+
+        <button class="add-task">+</button>
+
+        <nav>
+            <a href="../dashboard/index.html">
+                <img src="../../nav-img/home.png" alt="Home">
+            </a>
+            <a href="../tasks/tasks.html">
+                <img src="../../nav-img/assignment_add.png" alt="Tasks">
+            </a>
+            <a href="../schedule/">
+                <img src="../../nav-img/calendar_month.png" alt="Schedule">
+            </a>
+            <a href="../notif/">
+                <img src="../../nav-img/notifications.png" alt="Notifications">
+            </a>
+        </nav>
+    </div>
+</body>
+</html>
