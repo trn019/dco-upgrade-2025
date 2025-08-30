@@ -1,17 +1,17 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f5f5f5;
-    max-width: 400px;
+    max-width: 434px;
     margin: 0 auto;
     min-height: 100vh;
     position: relative;
 }
 
-#iphone-12-pro {
-    width: 390px;
-    height: 844px;
+#iphone-16-pro {
+    width: 402px;
+    height: 874px;
     border: 16px solid black;
-    border-radius: 36px;
+    border-radius: 47px;
     position: relative;
     background: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -21,6 +21,7 @@ body {
     font-size: 18px;
     margin-bottom: 30px;
     color: #333;
+    margin-top: 20px;
 }
 
 .incoming-title {
@@ -33,6 +34,9 @@ body {
 .task-carousel {
     position: relative;
     margin-bottom: 40px;
+    background: #e0e0e0;
+    border-radius: 15px;
+    padding: 20px 10px;
 }
 
 .task-card {
@@ -81,18 +85,18 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-complete {
+    background: #4caf50;
+}
+
+.btn-focus-mode {
+    background: #ff9800;
+}
+
 .view-more {
     color: #666;
     font-size: 14px;
     text-decoration: none;
-}
-
-.task-carousel {
-    position: relative;
-    margin-bottom: 40px;
-    background: #e0e0e0;
-    border-radius: 15px;
-    padding: 20px 10px;
 }
 
 .carousel-nav {
@@ -110,6 +114,7 @@ body {
     justify-content: center;
     font-size: 18px;
     color: #666;
+    z-index: 2;
 }
 
 .carousel-nav.prev {
@@ -132,6 +137,7 @@ body {
     height: 8px;
     border-radius: 50%;
     background: #f0f0f0;
+    cursor: pointer;
 }
 
 .dot.active {
@@ -140,6 +146,13 @@ body {
 
 .watch-out {
     margin-bottom: 40px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
 }
 
 .watch-out-subtitle {
@@ -161,21 +174,25 @@ body {
 .room-image {
     width: 60px;
     height: 60px;
-    background: #ddd;
+    background: linear-gradient(45deg, #ddd, #f0f0f0);
     border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
 }
 
 .room-info h5 {
     font-size: 18px;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin: 0 0 5px 0;
     color: #333;
 }
 
 .room-info p {
     color: #666;
     font-size: 12px;
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
 }
 
 .progress-bar {
@@ -193,15 +210,109 @@ body {
     border-radius: 2px;
 }
 
-nav{
+nav {
     position: absolute;
     bottom: 0;
-    width: 100%;
+    left: 0;
+    right: 0;
     height: 60px;
     background: white;
     border-top: 1px solid #ddd;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-radius: 0 0 36px 36px;
+    border-radius: 0 0 31px 31px;
+}
+
+nav a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+nav a:hover {
+    background: #f0f0f0;
+}
+
+.nav-icon {
+    width: 24px;
+    height: 24px;
+    background: #666;
+}
+
+/* Tab styles for other pages */
+.tab {
+    padding: 10px 20px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 20px;
+    margin-right: 10px;
+    transition: background 0.2s;
+}
+
+.tab.active {
+    background: #1565c0;
+    color: white;
+}
+
+.day-item {
+    padding: 8px 12px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-right: 8px;
+    transition: background 0.2s;
+}
+
+.day-item.active {
+    background: #1565c0;
+    color: white;
+}
+
+.shuffle-btn, .fab {
+    background: #1565c0;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: #ff5722;
+}
+
+/* Demo day items and tabs for testing */
+.demo-controls {
+    margin: 20px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.demo-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.demo-section h4 {
+    margin: 0 0 10px 0;
+    color: #333;
 }
