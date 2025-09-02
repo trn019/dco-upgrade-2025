@@ -1,3 +1,26 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    max-width: 434px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    padding: 20px;
+}
+
+#iphone-16-pro {
+    width: 402px;
+    height: 874px;
+    border: 16px solid black;
+    border-radius: 47px;
+    position: relative;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
 .tab-header {
     display: flex;
     margin-bottom: 25px;
@@ -32,19 +55,21 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 25px;
-    gap: 5px;
+    gap: 1px;
 }
 
 .day-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 6px;
-    border-radius: 20px;
+    padding: 4px 2px;
+    border-radius: 12px;
     background: white;
-    min-width: 45px;
+    min-width: 32px;
     cursor: pointer;
     transition: all 0.3s;
+    flex: 1;
+    max-width: 40px;
 }
 
 .day-item.active {
@@ -53,22 +78,25 @@
 }
 
 .day-abbr {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
-    margin: 0 0 2px 0;
+    margin: 0;
+    line-height: 1.1;
 }
 
 .expand-icon {
     background: #e0e0e0;
     border: none;
-    border-radius: 8px;
-    width: 35px;
-    height: 35px;
+    border-radius: 6px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-left: 2px;
 }
 
 .expand-icon::before {
@@ -135,7 +163,7 @@
 .dropdown {
     position: relative;
 }
-  
+
 .dropdown-menu {
     display: none;
     position: absolute;
@@ -149,22 +177,21 @@
     min-width: 160px;
     overflow: hidden;
 }
-  
+
 .dropdown-menu div {
     padding: 10px 15px;
     cursor: pointer;
     font-size: 14px;
     color: #333;
 }
-  
+
 .dropdown-menu div:hover {
     background: #f0f0f0;
 }
-  
+
 .dropdown.open .dropdown-menu {
     display: block;
 }
-  
 
 .room {
     margin-bottom: 30px;
@@ -239,14 +266,24 @@
     transition: width 0.3s;
 }
 
-.progress-red    { background: #f44336; }
+.progress-red { background: #f44336; }
 .progress-yellow { background: #ffd900; }
-.progress-green  { background: #4caf50; }
+.progress-green { background: #4caf50; }
 
 .status-text {
     font-size: 11px;
     color: #999;
     margin: 0;
+}
+
+.effort-chip {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #eef3ff;
+    color: #1976d2;
 }
 
 .add-task {
@@ -267,6 +304,11 @@
 
 .add-task:hover {
     transform: scale(1.1);
+}
+
+.add-task.expanded {
+    transform: rotate(45deg);
+    background: #f44336;
 }
 
 .task-options {
@@ -319,11 +361,6 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.add-task.expanded {
-    transform: rotate(45deg);
-    background: #f44336;
-}
-
 .tab-content {
     display: none;
 }
@@ -371,7 +408,37 @@
     margin: 0;
 }
 
+nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: white;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 0 0 31px 31px;
+}
 
+nav a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #666;
+    padding: 8px 16px;
+    border-radius: 8px;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+}
+
+nav a:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
 
 /* Modal styles */
 .modal {
@@ -427,16 +494,6 @@
     font-size: 20px;
     font-weight: 600;
     color: #333;
-}
-
-.back-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #666;
-    cursor: pointer;
-    padding: 5px;
-    line-height: 1;
 }
 
 .close-modal {
@@ -599,208 +656,3 @@ textarea::placeholder {
     background: #1565c0;
     transform: translateY(-1px);
 }
-
-/* Frequency Section Styles for Recurring Modal */
-.frequency-section {
-    background: #f8f8f8;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px 25px;
-}
-
-.frequency-header {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-/* Day picker styles */
-.day-picker-container {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
-.day-picker-header {
-    text-align: center;
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.dual-picker {
-    display: flex;
-    gap: 15px;
-}
-
-.number-picker,
-.unit-picker {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.picker-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-.picker-scroll {
-    height: 120px;
-    width: 100%;
-    overflow-y: auto;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    position: relative;
-}
-
-.picker-list {
-    padding: 40px 0;
-}
-
-.picker-item {
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #999;
-}
-
-.picker-item.selected {
-    color: #1976d2;
-    font-weight: 600;
-    background: rgba(25, 118, 210, 0.1);
-}
-
-.picker-item:hover {
-    background: #f0f0f0;
-}
-
-/* Picker indicators */
-.picker-scroll::before,
-.picker-scroll::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.9), transparent);
-    pointer-events: none;
-    z-index: 10;
-}
-
-.picker-scroll::before {
-    top: 0;
-}
-
-.picker-scroll::after {
-    bottom: 0;
-    background: linear-gradient(to top, rgba(255,255,255,0.9), transparent);
-}
-
-.repeat-section,
-.time-section,
-.notify-section {
-    margin-bottom: 15px;
-}
-
-.repeat-row,
-.time-row,
-.notify-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.repeat-row:hover,
-.time-row:hover {
-    background: #f0f0f0;
-}
-
-.repeat-value,
-.time-value {
-    color: #666;
-    font-size: 14px;
-}
-
-.notify-row {
-    cursor: default;
-}
-
-.toggle-switch {
-    position: relative;
-    width: 50px;
-    height: 30px;
-}
-
-.toggle-input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-label {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.3s;
-    border-radius: 30px;
-}
-
-.toggle-label:before {
-    position: absolute;
-    content: "";
-    height: 24px;
-    width: 24px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-}
-
-.toggle-input:checked + .toggle-label {
-    background-color: #4db6ac;
-}
-
-.toggle-input:checked + .toggle-label:before {
-    transform: translateX(20px);
-}
-
-.effort-chip {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    background: #eef3ff;
-    color: #1976d2;
-}
-
-.visually-hidden {
-    position: absolute !important;
-    height: 1px; width: 1px;
-    overflow: hidden; clip: rect(1px, 1px, 1px, 1px);
-    white-space: nowrap;
-}
-  
