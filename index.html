@@ -4,61 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./home.css">
     <title>Clean Habits</title>
     
 </head>
 <body>
-    <script src="./index.js"></script>
     <div id="iphone-16-pro">
-        <h1 class="greeting">
-            Hello, xxx
-        </h1>
-        <h2 class="incoming-title">
-            Incoming Tasks!
-        </h2>
-        <div class="task-carousel">
-            <button class="carousel-nav prev">&lt;</button>
-            <div class="task-card">
-                <h3 class="task-title">Wash the dishes</h3>
-                <p class="task-time">Today, 10:12am</p>
-                <div class="task-buttons">
-                    <button class="btn btn-complete">Mark Completed</button>
-                    <button class="btn btn-focus-mode">Begin Focus Mode</button>
-                </div>
-                <a href="#" class="view-more">View More</a>
-            </div>
-            <button class="carousel-nav next">&gt;</button>
-            <div class="carousel-dots">
-                <div class="dot active"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        </div>
+        <div class="container">
 
-        <section class="watch-out">
-            <h3 class="section-title">Watch Out!</h3>
-            <h4 class="watch-out-subtitle">Make sure to check on this room!</h4>
-            <div class="room-card">
-                <div class="room-image">🏠</div>
-                <div class="room-info">
-                    <h5>Kitchen</h5>
-                    <p>cleaned 3 weeks ago or 30% clean</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
+            <h1 class="greeting">
+                Hello, xxx
+            </h1>
+            <h2 class="incoming-title">
+                Incoming Tasks!
+            </h2>
+            <div class="task-carousel">
+                <button class="carousel-nav prev">&lt;</button>
+                <div class="task-card">
+                    <h3 class="task-title">Wash the dishes</h3>
+                    <p class="task-time">Today, 10:12am</p>
+                    <div class="task-buttons">
+                        <button class="btn btn-complete">Mark Completed</button>
+                        <button class="btn btn-focus-mode">Begin Focus Mode</button>
+                    </div>
+                    <a href="#" class="view-more">View More</a>
+                </div>
+                <button class="carousel-nav next">&gt;</button>
+                <div class="carousel-dots">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+    
+            <section class="watch-out">
+                <h3 class="section-title">Watch Out!</h3>
+                <h4 class="watch-out-subtitle">Make sure to check on this room!</h4>
+                <div class="room-card">
+                    <div class="room-image">🏠</div>
+                    <div class="room-info">
+                        <h5>Kitchen</h5>
+                        <p>cleaned 3 weeks ago or 30% clean</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
                     </div>
                 </div>
+            </section>
+    
+            <!-- Demo sections for testing JavaScript functionality -->
+            <div class="demo-section">
+                <h4>Day Selection Demo:</h4>
+                <div class="demo-controls">
+                    <div class="day-item active">Mon</div>
+                    <div class="day-item">Tue</div>
+                    <div class="day-item">Wed</div>
+                    <div class="day-item">Thu</div>
+                    <div class="day-item">Fri</div>
+                </div>
             </div>
-        </section>
-
-        <!-- Demo sections for testing JavaScript functionality -->
-        <div class="demo-section">
-            <h4>Day Selection Demo:</h4>
-            <div class="demo-controls">
-                <div class="day-item active">Mon</div>
-                <div class="day-item">Tue</div>
-                <div class="day-item">Wed</div>
-                <div class="day-item">Thu</div>
-                <div class="day-item">Fri</div>
+    
+            <div class="demo-section">
+                <h4>Tab Demo:</h4>
+                <div class="demo-controls">
+                    <button class="tab active">Home</button>
+                    <button class="tab">Tasks</button>
+                    <button class="tab">Schedule</button>
+                </div>
+            </div>
+    
+            <div class="demo-section">
+                <h4>Action Buttons:</h4>
+                <div class="demo-controls">
+                    <button class="shuffle-btn">🔄</button>
+                </div>
             </div>
         </div>
 
@@ -78,5 +97,6 @@
             </a>
         </nav>
     </div>
+    <script src="./scripts.js"></script>
 </body>
 </html>
