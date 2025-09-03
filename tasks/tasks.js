@@ -632,3 +632,277 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+ // ===== FULL-PAGE ROOM SCREEN =====
+(function initRoomScreen() {
+  const screenEl = document.getElementById('room-screen');
+  const titleEl  = document.getElementById('roomScreenTitle');
+  const summaryEl= document.getElementById('roomScreenSummary');
+  const listEl   = document.getElementById('roomScreenTasks');
+  const backBtn  = document.getElementById('roomScreenBack');
+
+  // Wire up room cards (Rooms tab)
+  document.querySelectorAll('.rooms-grid .room-card').forEach(card => {
+    const roomKey = card.getAttribute('data-room');
+    if (!roomKey) return;
+    card.addEventListener('click', () => openRoomScreen(roomKey));
+  });
+
+  // Optional: open from Tasks tab via a small hook (room label) if you add it
+  // document.addEventListener('click', (e) => {
+  //   const link = e.target.closest('[data-open-room]');
+  //   if (link) {
+  //     openRoomScreen(link.getAttribute('data-open-room'));
+  //   }
+  // });
+
+  backBtn.addEventListener('click', closeRoomScreen);
+  // Close on Esc
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && screenEl.classList.contains('active')) closeRoomScreen();
+  });
+
+  function openRoomScreen(roomKey) {
+    // Title
+    titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
+
+    // Collect all tasks for this room across days
+    const tasksForRoom = [];
+    Object.keys(taskData).forEach(dayKey => {
+      const list = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
+      list.forEach(t => tasksForRoom.push({ ...t, _day: dayKey.toUpperCase() }));
+    });
+
+    // Summary (count + most recent lastCleaned)
+    const total = tasksForRoom.length;
+    let mostRecentTxt = '—';
+    let bestVal = Infinity;
+    tasksForRoom.forEach(t => {
+      const d = daysAgoFromText(t.lastCleaned || '');
+      if (d < bestVal) { bestVal = d; mostRecentTxt = t.lastCleaned || '—'; }
+    });
+
+    summaryEl.innerHTML = `
+      <div><strong>${total}</strong> task${total === 1 ? '' : 's'} in this room</div>
+      <div>Most recent clean: <em>${mostRecentTxt}</em></div>
+    `;
+
+    // Render tasks
+    if (!total) {
+      listEl.innerHTML = `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
+    } else {
+      listEl.innerHTML = tasksForRoom.map(t => {
+        const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+        const colorClass = progressColorClass(pct);
+        const effortLabel = t.effort ? t.effort[0].toUpperCase() + t.effort.slice(1) : 'Moderate';
+
+        return `
+          <div class="room-task-card">
+            <div class="room-task-top">
+              <p class="room-task-name">${t.name}</p>
+              <span class="room-task-day">${t._day}</span>
+            </div>
+            <div class="room-task-bottom">
+              <div class="progress-bar">
+                <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
+              </div>
+              <span class="effort-chip">${effortLabel}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
+              <span>${t.lastCleaned || ''}</span>
+              <span>${t.frequency || ''}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Hide other tab contents, show screen
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    screenEl.classList.add('active');
+  }
+
+  function closeRoomScreen() {
+    screenEl.classList.remove('active');
+
+    // Return user to the Rooms tab (or whichever you prefer)
+    const roomsTabBtn = document.querySelector('.tab[data-tab="rooms"]');
+    const roomsContent = document.getElementById('rooms-content');
+    if (roomsTabBtn && roomsContent) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      roomsTabBtn.classList.add('active');
+      roomsContent.classList.add('active');
+    }
+  }
+})();
+
+function openRoomScreen(roomKey) {
+  // fill in content like before
+  titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
+  // … populate tasks …
+
+  // switch tabs
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('room-screen').classList.add('active');
+}
+
+function closeRoomScreen() {
+  // go back to rooms tab
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('rooms-content').classList.add('active');
+}
+
+// ===== ROOM SCREEN (with progress + sort + tasks near bottom) =====
+let roomSort = 'urgency'; // default sort for the room screen
+
+(function initRoomScreen() {
+  const screenEl   = document.getElementById('room-screen');
+  const titleEl    = document.getElementById('roomScreenTitle');
+  const listEl     = document.getElementById('roomScreenTasks');
+  const backBtn    = document.getElementById('roomScreenBack');
+  const progFill   = document.getElementById('roomProgressFill');
+  const progPctEl  = document.getElementById('roomProgressPct');
+  const progLabel  = document.getElementById('roomProgressLabel');
+
+  const sortBtn    = document.getElementById('roomSortBtn');
+  const sortMenu   = document.getElementById('roomSortMenu');
+  const dropdown   = sortBtn?.closest('.dropdown');
+
+  // wire: clicking room cards opens this screen
+  document.querySelectorAll('.rooms-grid .room-card').forEach(card => {
+    const roomKey = card.getAttribute('data-room');
+    if (!roomKey) return;
+    card.addEventListener('click', () => openRoomScreen(roomKey));
+  });
+
+  // back to Rooms tab
+  backBtn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('rooms-content').classList.add('active');
+    // also set Rooms tab button active
+    const roomsTabBtn = document.querySelector('.tab[data-tab="rooms"]');
+    if (roomsTabBtn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      roomsTabBtn.classList.add('active');
+    }
+  });
+
+  // sort dropdown behavior (reuse your style)
+  if (sortBtn && dropdown) {
+    sortBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+    sortMenu.querySelectorAll('div[data-sort]').forEach(item => {
+      item.addEventListener('click', () => {
+        roomSort = item.getAttribute('data-sort');
+        sortBtn.textContent = 'Sort by ⌄'; // keep label
+        dropdown.classList.remove('open');
+        // re-render with new sort
+        const currentRoom = screenEl.dataset.roomKey;
+        if (currentRoom) renderRoomScreen(currentRoom);
+      });
+    });
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
+    });
+  }
+
+  // expose open function (so you can call from elsewhere if needed)
+  window.openRoomScreen = openRoomScreen;
+
+  function openRoomScreen(roomKey) {
+    screenEl.dataset.roomKey = roomKey;
+    titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
+
+    // switch tabs: show this screen
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    screenEl.classList.add('active');
+
+    renderRoomScreen(roomKey);
+  }
+
+  function renderRoomScreen(roomKey) {
+    const tasksForRoom = collectRoomTasks(roomKey);
+
+    // compute overall progress = average remaining% across tasks
+    const pctArray = tasksForRoom.map(t => computeProgressPercent(t.lastCleaned, t.frequency));
+    const avg = pctArray.length ? Math.round(pctArray.reduce((a,b)=>a+b,0)/pctArray.length) : 0;
+    const colorClass = progressColorClass(avg);
+
+    // fill progress UI
+    progFill.classList.remove('progress-green','progress-yellow','progress-red');
+    progFill.classList.add(colorClass);
+    progFill.style.width = `${avg}%`;
+    progPctEl.textContent = `${avg}%`;
+    progLabel.textContent = avg <= 10 ? 'Overdue'
+                          : avg <= 33 ? 'Needs attention'
+                          : avg <= 66 ? 'Getting dusty'
+                          : 'Looking good';
+
+    // sort + render list
+    const sorted = sortTasks(tasksForRoom, roomSort);
+    listEl.innerHTML = renderTasks(sorted);
+  }
+
+  function collectRoomTasks(roomKey) {
+    const tasks = [];
+    Object.keys(taskData).forEach(dayKey => {
+      const list = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
+      list.forEach(t => tasks.push({ ...t, _day: dayKey.toUpperCase() }));
+    });
+    return tasks;
+  }
+
+  function sortTasks(arr, mode) {
+    const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
+    const copy = arr.slice();
+
+    if (mode === 'effort-asc' || mode === 'effort-desc') {
+      copy.forEach(t => { if (!t.effort) t.effort = 'moderate'; });
+      copy.sort((a,b) => {
+        const av = EFFORT_ORDER[a.effort] || 2;
+        const bv = EFFORT_ORDER[b.effort] || 2;
+        return mode === 'effort-asc' ? av - bv : bv - av;
+      });
+      return copy;
+    }
+
+    // default: urgency (due first) -> smaller remaining% means more due
+    copy.sort((a,b) => {
+      const pa = computeProgressPercent(a.lastCleaned, a.frequency);
+      const pb = computeProgressPercent(b.lastCleaned, b.frequency);
+      return pa - pb;
+    });
+    return copy;
+  }
+
+  function renderTasks(tasks) {
+    if (!tasks.length) {
+      return `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
+    }
+    return tasks.map(t => {
+      const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+      const colorClass = progressColorClass(pct);
+      const effortLabel = t.effort ? t.effort[0].toUpperCase() + t.effort.slice(1) : 'Moderate';
+      return `
+        <div class="room-task-card">
+          <div class="room-task-top">
+            <p class="room-task-name">${t.name}</p>
+            <span class="room-task-day">${t._day || ''}</span>
+          </div>
+          <div class="room-task-bottom">
+            <div class="progress-bar">
+              <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
+            </div>
+            <span class="effort-chip">${effortLabel}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
+            <span>${t.lastCleaned || ''}</span>
+            <span>${t.frequency || ''}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+})();

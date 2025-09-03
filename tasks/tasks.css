@@ -341,13 +341,28 @@
     background: #f44336;
 }
 
-.tab-content {
-    display: none;
+/* Reserve space for the absolute bottom nav so content isn't covered */
+.tab-content,
+#room-screen {
+  padding-bottom: 70px;    /* nav is 60px tall; give it some breathing room */
 }
 
-.tab-content.active {
+/* Active panel consumes remaining height in the frame */
+.tab-content {
+    display: none;    /* hide all by default */
+    flex: 1 1 auto;   /* NEW: also set on base, not just .active */
+    min-height: 0;    /* critical for nested scrollers */
+    overflow: hidden; /* avoid double scrolls; we'll scroll inner areas */
+  }
+
+.tab-content.active { 
     display: block;
-}
+    flex: 1 1 auto;     /* take remaining height */
+    min-height: 0;      /* CRITICAL for nested scrolls */
+    overflow: hidden;   /* we'll scroll specific inner areas */
+  }
+
+.tab-content.active#room-screen { display: flex; flex-direction: column;}
 
 .rooms-title {
     font-size: 18px;
@@ -845,3 +860,260 @@ textarea::placeholder {
 .toggle-input:checked + .toggle-label:before {
     transform: translateX(20px);
 }
+
+/* Full-page screen base */
+.screen {
+    position: absolute;           /* or fixed if you want to cover nav too */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;                    /* respects your #iphone-16-pro frame */
+    background: #fafafa;
+    z-index: 900;                 /* above page, below modals (1000) */
+    display: none;
+    flex-direction: column;
+  }
+  
+  /* show screen */
+  .screen.active {
+    display: flex;
+    animation: screenSlideIn 0.25s ease-out;
+  }
+  
+  @keyframes screenSlideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Header */
+  .screen-header {
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .screen-header h2 {
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* Summary section */
+  .room-screen-summary {
+    padding: 14px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    font-size: 14px;
+  }
+  
+  /* Task list container */
+  .room-screen-tasks {
+    padding: 14px 16px 24px 16px;
+    overflow-y: auto;
+  }
+  
+  /* Reuse your card look */
+  .room-task-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  .room-task-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .room-task-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    margin: 0;
+  }
+  
+  .room-task-day {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+  }
+  
+  .room-task-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .effort-chip {
+    display: inline-block;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    background: #f0f0f0;
+    color: #333;
+  }
+  
+  /* Room screen is a normal tab panel, so the tab header stays visible */
+/* Ensure the screen itself can host a scroller inside */
+
+/* #room-screen { */
+    /* height: calc(100% - 60px);  leaving space for bottom nav */
+    /* display: flex;              only when active per your tab CSS */
+    /* flex-direction: column; */
+    /* padding-bottom: 8px; */
+    /* min-height: 0;              ✅ important for nested scrolls */
+/* } */
+
+/* Room screen: full-height flex column */
+#room-screen { 
+    display: none;            /* hidden by default like other tabs */
+  }
+
+  #room-screen.active { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1 1 auto; 
+    min-height: 0; 
+  }
+
+  /* Header row */
+  #room-screen .screen-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+  }
+  #room-screen .screen-header h2 {
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+  }
+  #roomScreenBack {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+  }
+  
+  /* Body area: column layout so we can push tasks toward bottom */
+/* Parent of the bottom block */
+/* Body area is a column that can push the block to the bottom */
+.room-screen-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .room-spacer {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+/* New wrapper that *pushes* the group to the bottom */
+/* pushes the block down */
+.room-tasks-block {
+    margin-top: auto;       /* 👈 KEY: sits at bottom */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;          /* needed so the scroller below can shrink */
+  }
+  
+  /* Progress card */
+  .room-progress {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    margin-bottom: 12px;
+  }
+  .room-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  
+  /* Sort row */
+  .room-sort {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+  .room-sort .dropdown { position: relative; }
+  
+  /* Reuse your dropdown styling */
+  #roomSortMenu { right: 0; }
+  
+  /* Tasks list container — sits near the bottom */
+/* The ONLY scroller */
+.room-screen-tasks {
+    flex: 1 1 auto;         /* take remaining space in the block */
+    min-height: 0;
+
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  
+  /* Task card look (matches your cards) */
+  .room-task-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  .room-task-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .room-task-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    margin: 0;
+  }
+  .room-task-day {
+    font-size: 11px;
+    color: #888;
+    white-space: nowrap;
+  }
+  .room-task-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .effort-chip {
+    display: inline-block;
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: 11px;
+    background: #f0f0f0;
+    color: #333;
+  }
+  
+  

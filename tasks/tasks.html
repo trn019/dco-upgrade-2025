@@ -125,8 +125,7 @@
         </div>
 
         <!-- Rooms Content -->
-        <!-- Rooms Content -->
-        <div class="tab-content active" id="rooms-content">
+        <div class="tab-content" id="rooms-content">
             <div class="shuffle-section">
                 <p>Overwhelmed? Don't know where to start? Let me choose a random task!</p>
                 <button class="shuffle-btn"></button>
@@ -135,7 +134,7 @@
             <h2 class="rooms-title">Rooms:</h2>
             
             <div class="rooms-grid">
-                <div class="room-card">
+                <div class="room-card" data-room="kitchen">
                     <div class="room-header">
                         <div class="room-info">
                             <div class="room-name">Kitchen</div>
@@ -149,7 +148,7 @@
                     </div>
                 </div>
 
-                <div class="room-card">
+                <div class="room-card" data-room="bedroom">
                     <div class="room-header">
                         <div class="room-info">
                             <div class="room-name">Bedroom</div>
@@ -163,7 +162,7 @@
                     </div>
                 </div>
 
-                <div class="room-card">
+                <div class="room-card" data-room="dining">
                     <div class="room-header">
                         <div class="room-info">
                             <div class="room-name">Dining Room</div>
@@ -177,7 +176,7 @@
                     </div>
                 </div>
 
-                <div class="room-card">
+                <div class="room-card" data-room="bathroom">
                     <div class="room-header">
                         <div class="room-info">
                             <div class="room-name">Bathroom</div>
@@ -191,7 +190,7 @@
                     </div>
                 </div>
 
-                <div class="room-card">
+                <div class="room-card" data-room="living">
                     <div class="room-header">
                         <div class="room-info">
                             <div class="room-name">Living Room</div>
@@ -206,6 +205,48 @@
                 </div>
             </div>
         </div>
+
+        <!-- Room Details Screen -->
+<div class="tab-content" id="room-screen">
+    <div class="screen-header">
+      <button id="roomScreenBack" class="back-btn">‹</button>
+      <h2 id="roomScreenTitle">Room</h2>
+      <span style="width:24px;"></span>
+    </div>
+  
+    <div id="roomScreenBody" class="room-screen-body">
+        <div class="room-spacer" aria-hidden="true"></div>  <!-- NEW -->
+        
+      <div class="room-tasks-block">
+          <!-- 1) Progress status -->
+        <div class="room-progress">
+          <div class="room-progress-top">
+            <span id="roomProgressLabel">Overall status</span>
+            <span id="roomProgressPct">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div id="roomProgressFill" class="progress-fill progress-green" style="width:0%;"></div>
+          </div>
+        </div>
+    
+        <!-- 2) Sort by -->
+        <div class="room-sort">
+          <div class="dropdown">
+            <button class="sort-btn" id="roomSortBtn">Sort by ⌄</button>
+            <div class="dropdown-menu" id="roomSortMenu">
+              <div data-sort="urgency">Urgency (Due → Fresh)</div>
+              <div data-sort="effort-asc">Effort (Low → High)</div>
+              <div data-sort="effort-desc">Effort (High → Low)</div>
+              <!-- add more if needed -->
+            </div>
+          </div>
+        </div>
+    
+        <!-- 3) Tasks list -->
+        <div id="roomScreenTasks" class="room-screen-tasks"></div>
+      </div>
+    </div>
+  </div>
 
         <button class="add-task">+</button>
 
@@ -406,7 +447,13 @@
                 <img src="../nav-img/notifications.png" alt="Notifications" style="width:24px;height:24px;">
             </a>
         </nav>
+
+  
+  
+
+       
     </div>
+    
     <script src="./tasks.js"></script>
 </body>
 </html>
