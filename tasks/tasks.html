@@ -125,33 +125,85 @@
         </div>
 
         <!-- Rooms Content -->
-        <div class="tab-content" id="rooms-content">
-            <div class="room-grid">
-                <div class="room-card-tab" data-room="bedroom">
-                    <div class="room-emoji">🛏️</div>
-                    <h3 class="room-name">Bedroom</h3>
-                    <p class="room-status">2 tasks pending</p>
-                </div>
-                <div class="room-card-tab" data-room="kitchen">
-                    <div class="room-emoji">🍳</div>
-                    <h3 class="room-name">Kitchen</h3>
-                    <p class="room-status">1 task pending</p>
-                </div>
-                <div class="room-card-tab" data-room="bathroom">
-                    <div class="room-emoji">🚿</div>
-                    <h3 class="room-name">Bathroom</h3>
-                    <p class="room-status">3 tasks pending</p>
-                </div>
-                <div class="room-card-tab" data-room="living">
-                    <div class="room-emoji">🛋️</div>
-                    <h3 class="room-name">Living Room</h3>
-                    <p class="room-status">1 task pending</p>
-                </div>
+        <!-- Rooms Content -->
+        <div class="tab-content active" id="rooms-content">
+            <div class="shuffle-section">
+                <p>Overwhelmed? Don't know where to start? Let me choose a random task!</p>
+                <button class="shuffle-btn"></button>
             </div>
 
-            <div class="room-details" id="room-details">
-                <h2 id="selected-room-title">Select a room to view tasks</h2>
-                <div id="room-tasks"></div>
+            <h2 class="rooms-title">Rooms:</h2>
+            
+            <div class="rooms-grid">
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-info">
+                            <div class="room-name">Kitchen</div>
+                            <div class="room-status">cleaned 1 day ago</div>
+                        </div>
+                        <div class="status-indicator status-green"></div>
+                    </div>
+                    <div class="room-bottom">
+                        <div class="task-count">1</div>
+                        <div class="task-label">task</div>
+                    </div>
+                </div>
+
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-info">
+                            <div class="room-name">Bedroom</div>
+                            <div class="room-status">cleaned 1 day ago</div>
+                        </div>
+                        <div class="status-indicator status-green"></div>
+                    </div>
+                    <div class="room-bottom">
+                        <div class="task-count">3</div>
+                        <div class="task-label">tasks</div>
+                    </div>
+                </div>
+
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-info">
+                            <div class="room-name">Dining Room</div>
+                            <div class="room-status">cleaned 1 day ago</div>
+                        </div>
+                        <div class="status-indicator status-green"></div>
+                    </div>
+                    <div class="room-bottom">
+                        <div class="task-count">3</div>
+                        <div class="task-label">tasks</div>
+                    </div>
+                </div>
+
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-info">
+                            <div class="room-name">Bathroom</div>
+                            <div class="room-status">cleaned 5 days ago</div>
+                        </div>
+                        <div class="status-indicator status-yellow"></div>
+                    </div>
+                    <div class="room-bottom">
+                        <div class="task-count">4</div>
+                        <div class="task-label">tasks</div>
+                    </div>
+                </div>
+
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-info">
+                            <div class="room-name">Living Room</div>
+                            <div class="room-status">cleaned 5 days ago</div>
+                        </div>
+                        <div class="status-indicator status-red"></div>
+                    </div>
+                    <div class="room-bottom">
+                        <div class="task-count">5</div>
+                        <div class="task-label">tasks</div>
+                    </div>
+                </div>
             </div>
         </div>
 

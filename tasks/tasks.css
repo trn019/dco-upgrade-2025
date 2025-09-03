@@ -1,24 +1,4 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f5f5f5;
-    padding: 20px;
-}
-
-#iphone-16-pro {
-    max-width: 400px;
-    margin: 0 auto;
-    background: #f0f0f0;
-    border-radius: 25px;
-    padding: 20px;
-    position: relative;
-    min-height: 600px;
-}
 
 .tab-header {
     display: flex;
@@ -369,70 +349,88 @@ body {
     display: block;
 }
 
-.room-grid {
+.rooms-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Two column grid for rooms */
+.rooms-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 10px;
 }
 
-.room-card-tab {
-    background: white;
+.room-card {
+    background: #e8e8e8;
     border-radius: 12px;
     padding: 15px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    position: relative;
     cursor: pointer;
     transition: transform 0.2s;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-.room-card-tab:hover {
+.room-card:hover {
     transform: translateY(-2px);
 }
 
-.room-emoji {
-    font-size: 32px;
-    margin-bottom: 8px;
+.room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
 }
 
 .room-name {
     font-size: 14px;
     font-weight: 600;
     color: #333;
-    margin: 0 0 5px 0;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .room-status {
-    font-size: 11px;
+    font-size: 10px;
     color: #666;
-    margin: 0;
+    margin: 2px 0 0 0;
+    line-height: 1.1;
 }
 
-nav {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 15px;
-    padding: 15px;
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.room-bottom {
     display: flex;
-    justify-content: space-around;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    align-items: baseline;
+    gap: 6px;
+    margin-top: auto;
 }
 
-nav a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    border-radius: 10px;
-    transition: background 0.2s;
+.task-count {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
 }
 
-nav a:hover {
-    background: #f0f0f0;
+.task-label {
+    font-size: 12px;
+    color: #666;
 }
+
+.status-green { background: #4caf50; }
+.status-yellow { background: #ff9800; }
+.status-red { background: #f44336; }
 
 /* Modal styles */
 .modal {
