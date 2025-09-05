@@ -245,7 +245,7 @@
     transition: width 0.3s;
 }
 
-.progress-red {
+/* .progress-red {
     background: #f44336;
     width: 85%;
 }
@@ -258,7 +258,12 @@
 .progress-green {
     background: #4caf50;
     width: 20%;
-}
+} */
+
+/* Color-only progress classes (no width here) */
+.progress-red    { background:#f44336; }
+.progress-yellow { background:#ff9800; }
+.progress-green  { background:#4caf50; }
 
 .status-text {
     font-size: 11px;
@@ -1116,4 +1121,101 @@ textarea::placeholder {
     color: #333;
   }
   
+  /* Add Room card look */
+.add-room-card {
+    background: #fafafa;
+    border: 2px dashed #cfcfcf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   
+  .add-room-card:hover {
+    transform: translateY(-2px);
+    background: #fefefe;
+  }
+  
+  .add-room-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .add-room-plus {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #e8f5f4;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    color: #2f7d76;
+    font-weight: 700;
+  }
+  
+  .add-room-label {
+    font-size: 12px;
+    color: #333;
+    font-weight: 600;
+  }  
+
+  /* Header row: left (name+last) | right (status+dots) */
+.task-top{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:8px;margin-bottom:8px}
+.task-left .task-name,.room-task-name{font-weight:600;font-size:15px;color:#333;margin:0}
+.task-left .task-last{font-size:12px;color:#888;margin:2px 0 0 0}
+.task-right {
+    text-align: center;          /* center contents horizontally */
+    display: flex;
+    flex-direction: column;      /* stack status, bar, dots */
+    align-items: center;
+    gap: 4px;                    /* spacing between rows */
+  }
+  
+  .task-right .status-text {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+  }
+/* Effort as dots */
+.effort-dots{display:inline-flex;gap:4px;vertical-align:middle}
+.effort-dot{width:8px;height:8px;border-radius:50%;background:#ddd}
+.effort-dot.filled{background:#666}
+
+/* Progress bar lives in the right column now */
+.task-right .progress-bar {
+    width: 120px;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 0 0 auto;  /* <— prevent flex:1 from the global rule */
+  }
+  
+  /* Keep fills as-is (colors already defined) */
+  .task-right .progress-fill{
+    display:block;      /* ensure visible */
+    height:100%;
+    border-radius:4px;
+  }
+  
+  /* We’re no longer using the middle full-width bar for these cards */
+
+  
+/* Dots below */
+.task-right .effort-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .task-right .effort-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+  }
+  
+  .task-right .effort-dot.filled {
+    background: #333;
+  }

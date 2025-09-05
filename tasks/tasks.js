@@ -184,6 +184,57 @@ document.addEventListener('DOMContentLoaded', () => {
     setupModalEventListeners();
 });
 
+(function initAddRoomCard() {
+  const grid = document.querySelector('.rooms-grid');
+  if (!grid) return;
+
+  grid.addEventListener('click', (e) => {
+    const addCard = e.target.closest('.add-room-card');
+    if (!addCard) return;
+
+    const roomName = (prompt('New room name (e.g., “Garage”)') || '').trim();
+    if (!roomName) return;
+
+    const key = roomName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (!key) return alert('Invalid room name.');
+
+    if (document.querySelector(`.rooms-grid .room-card[data-room="${key}"]`)) {
+      return alert('That room already exists.');
+    }
+
+    // Update data objects
+    roomData[key] = { emoji: '🧽', tasks: 0 };
+    Object.keys(taskData).forEach(day => {
+      taskData[day][key] = taskData[day][key] || [];
+    });
+
+    // Build new room card
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.setAttribute('data-room', key);
+    card.innerHTML = `
+      <div class="room-header">
+        <div class="room-info">
+          <div class="room-name">${roomName}</div>
+          <div class="room-status">no clean yet</div>
+        </div>
+        <div class="status-indicator status-green"></div>
+      </div>
+      <div class="room-bottom">
+        <div class="task-count">0</div>
+        <div class="task-label">tasks</div>
+      </div>
+    `;
+
+    // Insert new room AFTER the add-room card
+    grid.insertBefore(card, addCard.nextSibling);
+
+    card.addEventListener('click', () => openRoomScreen(key));
+  });
+})();
+
+
+
 function setupModalEventListeners() {
     // One-time task modal
     const oneTimeModal = document.getElementById('oneTimeTaskModal');
@@ -477,6 +528,27 @@ function daysAgoFromText(text) {
     return 'progress-red';
   }
 
+  function statusFromPercent(pct){
+    return (pct<=10)?'Overdue!':(pct<=33)?'Uh oh...':(pct<=66)?'Getting dusty...':'Looking good!';
+  }
+
+  function effortToCount(effort) {
+    const e = (effort || 'moderate').toLowerCase();
+    if (e === 'low') return 1;
+    if (e === 'high') return 3;
+    return 2; // moderate
+  }
+  function renderEffortDots(effort) {
+    const n = effortToCount(effort);
+    return `
+      <span class="effort-dots" aria-label="Effort: ${effort || 'moderate'}">
+        <span class="effort-dot ${n >= 1 ? 'filled' : ''}"></span>
+        <span class="effort-dot ${n >= 2 ? 'filled' : ''}"></span>
+        <span class="effort-dot ${n >= 3 ? 'filled' : ''}"></span>
+      </span>
+    `;
+  }
+
   function updateTasksForDay(day) {
     const tasksContainer = document.getElementById('tasks-for-day');
     const dayTasks = taskData[day] || {};
@@ -484,32 +556,32 @@ function daysAgoFromText(text) {
     const renderTask = (task, roomLabel) => {
       const pct = computeProgressPercent(task.lastCleaned, task.frequency);
       const colorClass = progressColorClass(pct);
-  
+      const status = statusFromPercent(pct);
+    
       return `
-        <div class="task-item">
-          <div class="task-header">
-            <h3>${task.name}</h3>
-            ${task.effort ? `<span class="effort-chip">${task.effort.charAt(0).toUpperCase() + task.effort.slice(1)}</span>` : ''}
-          </div>
-          <div class="task-info">
-            <p>${task.lastCleaned}</p>
-            <div class="progress-bar">
-              <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
-            </div>
-            <p class="status-text">${
-              pct <= 10 ? 'Overdue!' :
-              pct <= 33 ? 'Uh oh...' :
-              pct <= 66 ? 'Getting dusty...' :
-              'Looking good!'
-            }</p>
-          </div>
-          <div class="task-frequency">
-            <span>${task.frequency}</span>
-            ${roomLabel ? `<span style="margin-left:8px; font-size:11px; color:#999;">• ${roomLabel}</span>` : ''}
-          </div>
-        </div>
-      `;
+  <div class="task-item">
+    <div class="task-top">
+      <div class="task-left">
+        <p class="task-name">${task.name}</p>
+        <p class="task-last">${task.lastCleaned||''}</p>
+      </div>
+      <div class="task-right">
+      <p class="status-text">${status}</p>
+      <div class="progress-bar">
+        <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
+      </div>
+      ${renderEffortDots(task.effort)}
+    </div>
+    </div>
+
+    <div class="task-frequency">
+      <span>${task.frequency}</span>
+      ${roomLabel?`<span style="margin-left:8px;font-size:11px;color:#999;">• ${roomLabel}</span>`:''}
+    </div>
+  </div>
+`;
     };
+    
   
     if (currentSort === 'room') {
       let html = '';
@@ -632,109 +704,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-
- // ===== FULL-PAGE ROOM SCREEN =====
-(function initRoomScreen() {
-  const screenEl = document.getElementById('room-screen');
-  const titleEl  = document.getElementById('roomScreenTitle');
-  const summaryEl= document.getElementById('roomScreenSummary');
-  const listEl   = document.getElementById('roomScreenTasks');
-  const backBtn  = document.getElementById('roomScreenBack');
-
-  // Wire up room cards (Rooms tab)
-  document.querySelectorAll('.rooms-grid .room-card').forEach(card => {
-    const roomKey = card.getAttribute('data-room');
-    if (!roomKey) return;
-    card.addEventListener('click', () => openRoomScreen(roomKey));
-  });
-
-  // Optional: open from Tasks tab via a small hook (room label) if you add it
-  // document.addEventListener('click', (e) => {
-  //   const link = e.target.closest('[data-open-room]');
-  //   if (link) {
-  //     openRoomScreen(link.getAttribute('data-open-room'));
-  //   }
-  // });
-
-  backBtn.addEventListener('click', closeRoomScreen);
-  // Close on Esc
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && screenEl.classList.contains('active')) closeRoomScreen();
-  });
-
-  function openRoomScreen(roomKey) {
-    // Title
-    titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
-
-    // Collect all tasks for this room across days
-    const tasksForRoom = [];
-    Object.keys(taskData).forEach(dayKey => {
-      const list = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
-      list.forEach(t => tasksForRoom.push({ ...t, _day: dayKey.toUpperCase() }));
-    });
-
-    // Summary (count + most recent lastCleaned)
-    const total = tasksForRoom.length;
-    let mostRecentTxt = '—';
-    let bestVal = Infinity;
-    tasksForRoom.forEach(t => {
-      const d = daysAgoFromText(t.lastCleaned || '');
-      if (d < bestVal) { bestVal = d; mostRecentTxt = t.lastCleaned || '—'; }
-    });
-
-    summaryEl.innerHTML = `
-      <div><strong>${total}</strong> task${total === 1 ? '' : 's'} in this room</div>
-      <div>Most recent clean: <em>${mostRecentTxt}</em></div>
-    `;
-
-    // Render tasks
-    if (!total) {
-      listEl.innerHTML = `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
-    } else {
-      listEl.innerHTML = tasksForRoom.map(t => {
-        const pct = computeProgressPercent(t.lastCleaned, t.frequency);
-        const colorClass = progressColorClass(pct);
-        const effortLabel = t.effort ? t.effort[0].toUpperCase() + t.effort.slice(1) : 'Moderate';
-
-        return `
-          <div class="room-task-card">
-            <div class="room-task-top">
-              <p class="room-task-name">${t.name}</p>
-              <span class="room-task-day">${t._day}</span>
-            </div>
-            <div class="room-task-bottom">
-              <div class="progress-bar">
-                <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
-              </div>
-              <span class="effort-chip">${effortLabel}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
-              <span>${t.lastCleaned || ''}</span>
-              <span>${t.frequency || ''}</span>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Hide other tab contents, show screen
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    screenEl.classList.add('active');
-  }
-
-  function closeRoomScreen() {
-    screenEl.classList.remove('active');
-
-    // Return user to the Rooms tab (or whichever you prefer)
-    const roomsTabBtn = document.querySelector('.tab[data-tab="rooms"]');
-    const roomsContent = document.getElementById('rooms-content');
-    if (roomsTabBtn && roomsContent) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      roomsTabBtn.classList.add('active');
-      roomsContent.classList.add('active');
-    }
-  }
-})();
 
 function openRoomScreen(roomKey) {
   // fill in content like before
@@ -884,25 +853,35 @@ let roomSort = 'urgency'; // default sort for the room screen
     return tasks.map(t => {
       const pct = computeProgressPercent(t.lastCleaned, t.frequency);
       const colorClass = progressColorClass(pct);
-      const effortLabel = t.effort ? t.effort[0].toUpperCase() + t.effort.slice(1) : 'Moderate';
+      const status = (
+        pct <= 10 ? 'Overdue!' :
+        pct <= 33 ? 'Uh oh...' :
+        pct <= 66 ? 'Getting dusty...' :
+        'Looking good!'
+      );
       return `
-        <div class="room-task-card">
-          <div class="room-task-top">
-            <p class="room-task-name">${t.name}</p>
-            <span class="room-task-day">${t._day || ''}</span>
-          </div>
-          <div class="room-task-bottom">
-            <div class="progress-bar">
-              <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
-            </div>
-            <span class="effort-chip">${effortLabel}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
-            <span>${t.lastCleaned || ''}</span>
-            <span>${t.frequency || ''}</span>
-          </div>
+  <div class="room-task-card">
+    <div class="task-top">
+      <div class="task-left">
+        <p class="room-task-name">${t.name}</p>
+        <p class="task-last">${t.lastCleaned || ''}</p>
+      </div>
+      <div class="task-right">
+        <p class="status-text">${status}</p>
+        <div class="progress-bar">
+          <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
         </div>
-      `;
+        ${renderEffortDots(t.effort)}
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
+      <span>${t.frequency || ''}</span>
+      <span>${(t._day || '').toUpperCase()}</span>
+    </div>
+  </div>
+`;
     }).join('');
   }
+  
 })();
