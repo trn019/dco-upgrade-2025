@@ -34,7 +34,7 @@ const roomData = {
     living: { emoji: "🛋️", tasks: 1 }
 };
 
-let currentSort = 'room'; // 'room' | 'effort-asc' | 'effort-desc'
+let currentSort = 'cleanliness'; // 'cleanliness' | 'effort-asc'
 
 const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
 
@@ -230,7 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.insertBefore(card, addCard.nextSibling);
 
     card.addEventListener('click', () => openRoomScreen(key));
+    card.querySelector('.room-name').textContent = roomName;
+sortRoomsGridAZ();
   });
+
 })();
 
 
@@ -553,78 +556,63 @@ function daysAgoFromText(text) {
     const tasksContainer = document.getElementById('tasks-for-day');
     const dayTasks = taskData[day] || {};
   
-    const renderTask = (task, roomLabel) => {
-      const pct = computeProgressPercent(task.lastCleaned, task.frequency);
+    const sortTasksInRoom = (arr) => {
+      const copy = arr.slice();
+      if (currentSort === 'cleanliness') {
+        copy.sort((a, b) => {
+          const pa = computeProgressPercent(a.lastCleaned, a.frequency);
+          const pb = computeProgressPercent(b.lastCleaned, b.frequency);
+          return pa - pb; // due first
+        });
+        return copy;
+      }
+      // effort-asc only
+      const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
+      copy.forEach(t => { if (!t.effort) t.effort = 'moderate'; });
+      copy.sort((a, b) => (EFFORT_ORDER[a.effort] || 2) - (EFFORT_ORDER[b.effort] || 2));
+      return copy;
+    };
+  
+    const renderTask = (task) => {
+      const pctRaw = computeProgressPercent(task.lastCleaned, task.frequency);
+      const pct = Math.max(0, Math.min(100, Number(pctRaw || 0)));
       const colorClass = progressColorClass(pct);
       const status = statusFromPercent(pct);
-    
       return `
-  <div class="task-item">
-    <div class="task-top">
-      <div class="task-left">
-        <p class="task-name">${task.name}</p>
-        <p class="task-last">${task.lastCleaned||''}</p>
-      </div>
-      <div class="task-right">
-      <p class="status-text">${status}</p>
-      <div class="progress-bar">
-        <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
-      </div>
-      ${renderEffortDots(task.effort)}
-    </div>
-    </div>
-
-    <div class="task-frequency">
-      <span>${task.frequency}</span>
-      ${roomLabel?`<span style="margin-left:8px;font-size:11px;color:#999;">• ${roomLabel}</span>`:''}
-    </div>
-  </div>
-`;
+        <div class="task-item">
+          <div class="task-top">
+            <div class="task-left">
+              <p class="task-name">${task.name}</p>
+              <p class="task-last">${task.lastCleaned||''}</p>
+            </div>
+            <div class="task-right">
+              <p class="status-text">${status}</p>
+              <div class="progress-bar">
+                <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
+              </div>
+              ${renderEffortDots(task.effort)}
+            </div>
+          </div>
+          <div class="task-frequency"><span>${task.frequency}</span></div>
+        </div>`;
     };
-    
   
-    if (currentSort === 'room') {
-      let html = '';
-      Object.keys(dayTasks).forEach(room => {
-        html += `<section class="room">
-          <h2>${room.charAt(0).toUpperCase() + room.slice(1)}</h2>`;
-        dayTasks[room].forEach(task => {
-          html += renderTask(task, null);
-        });
-        html += `</section>`;
-      });
-      tasksContainer.innerHTML = html || '<p style="text-align:center;color:#666;margin-top:40px;">No tasks scheduled for this day!</p>';
-      return;
-    }
+    // ✅ rooms always alphabetical
+    const roomsAZ = Object.keys(dayTasks).sort((a, b) => a.localeCompare(b));
   
-    // Effort sort (flatten + sort)
-    let allTasks = [];
-    Object.keys(dayTasks).forEach(room => {
-      (dayTasks[room] || []).forEach(task => allTasks.push({ ...task, _room: room }));
+    let html = '';
+    roomsAZ.forEach(room => {
+      const list = Array.isArray(dayTasks[room]) ? dayTasks[room] : [];
+      const sorted = sortTasksInRoom(list);
+      html += `<section class="room">
+        <h2>${room.charAt(0).toUpperCase() + room.slice(1)}</h2>
+        ${sorted.map(renderTask).join('')}
+      </section>`;
     });
   
-    if (allTasks.length === 0) {
-      tasksContainer.innerHTML = '<p style="text-align:center;color:#666;margin-top:40px;">No tasks scheduled for this day!</p>';
-      return;
-    }
-  
-    const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
-    allTasks.forEach(t => { if (!t.effort) t.effort = 'moderate'; });
-  
-    allTasks.sort((a, b) => {
-      const aVal = EFFORT_ORDER[a.effort] || 2;
-      const bVal = EFFORT_ORDER[b.effort] || 2;
-      return currentSort === 'effort-asc' ? aVal - bVal : bVal - aVal;
-    });
-  
-    let html = `<section class="room"><h2>Tasks (Sorted by Effort)</h2>`;
-    allTasks.forEach(task => {
-      const roomLabel = task._room.charAt(0).toUpperCase() + task._room.slice(1);
-      html += renderTask(task, roomLabel);
-    });
-    html += `</section>`;
-    tasksContainer.innerHTML = html;
+    tasksContainer.innerHTML = html || '<p style="text-align:center;color:#666;margin-top:40px;">No tasks scheduled for this day!</p>';
   }
+  
   
 
 
@@ -669,6 +657,27 @@ function showRoomTasks(room) {
     roomTasksContainer.innerHTML = html;
 }
 
+function sortRoomsGridAZ() {
+  const grid = document.querySelector('.rooms-grid');
+  if (!grid) return;
+
+  const addCard = grid.querySelector('.add-room-card');
+  const cards = Array.from(grid.querySelectorAll('.room-card'))
+    .filter(c => !c.classList.contains('add-room-card'));
+
+  cards.sort((a, b) => {
+    const an = a.querySelector('.room-name')?.textContent?.trim().toLowerCase() || '';
+    const bn = b.querySelector('.room-name')?.textContent?.trim().toLowerCase() || '';
+    return an.localeCompare(bn);
+  });
+
+  // Reattach in sorted order; keep Add card at the front (or move to end if you prefer)
+  grid.innerHTML = '';           // clear
+  grid.appendChild(addCard);     // keep add card first; change position if desired
+  cards.forEach(c => grid.appendChild(c));
+}
+
+
 // After you query .sort-btn:
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -703,6 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+    sortRoomsGridAZ();
   });
 
 function openRoomScreen(roomKey) {
