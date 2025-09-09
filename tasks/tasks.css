@@ -29,13 +29,41 @@
     font-weight: 600;
 }
 
+/* Default collapsed: row of 7 days + expand button aligned right */
 .day-selector {
     display: flex;
+    align-items: flex-start;   /* top-align when grid has multiple rows */
     justify-content: space-between;
-    align-items: center;
+    gap: 8px;
     margin-bottom: 25px;
-    gap: 1px;
-}
+  }
+
+  .day-selector .days-wrapper {
+    flex: 1;  /* take all available space left of the button */
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .day-selector.collapsed .days-wrapper {
+    grid-template-rows: 1fr;
+  }
+  
+/* Expanded: 3 rows of 7 days, expand button aligned to the right below */
+.day-selector.expanded {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 25px;
+    position: relative; /* anchor expand button */
+  }
+
+/* Position expand/collapse button in expanded view */
+.day-selector.expanded .expand-icon {
+    grid-column: 7 / -1;   /* stick to last column */
+    justify-self: end;     /* push it to the right */
+    margin-top: 8px;       /* space from the days */
+  }
 
 .day-item {
     display: flex;
@@ -63,6 +91,8 @@
     line-height: 1.1;
 }
 
+/* Style tweak for the expand/collapse button itself */
+/* Expand/collapse button stays on the right, same spot always */
 .expand-icon {
     background: #e0e0e0;
     border: none;
@@ -75,8 +105,7 @@
     cursor: pointer;
     font-size: 12px;
     flex-shrink: 0;
-    margin-left: 2px;
-}
+  }
 
 .expand-icon::before {
     content: "↕";
@@ -1941,3 +1970,5 @@ textarea::placeholder {
 #recurringTaskModal .modal-page[data-page="2"] .form-actions .btn-save {
     width: auto;
   }
+
+  

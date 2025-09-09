@@ -1585,3 +1585,75 @@ gotoOneTimePage = function(n) {
   _origGoto(n);
   if (n === 2) buildOneTimePage2Once();
 };
+
+let dayRangeExpanded = false; // false = 1 week, true = 3 weeks
+
+const expandBtn = document.querySelector('.expand-icon');
+expandBtn?.addEventListener('click', () => {
+  dayRangeExpanded = !dayRangeExpanded;
+  renderDaySelector(); // redraw the day items
+  updateExpandIcon();  // flip the icon
+});
+
+function updateExpandIcon() {
+  const expandBtn = document.querySelector('.expand-icon');
+  if (!expandBtn) return;
+  expandBtn.textContent = dayRangeExpanded ? '↔' : '↕'; 
+}
+
+function renderDaySelector() {
+  const container = document.querySelector('.day-selector');
+  if (!container) return;
+
+  // Ensure structure: days-wrapper + expand button
+  let daysWrapper = container.querySelector('.days-wrapper');
+  const expandBtn = container.querySelector('.expand-icon');
+  if (!daysWrapper) {
+    daysWrapper = document.createElement('div');
+    daysWrapper.className = 'days-wrapper';
+    container.innerHTML = '';          // clear old content
+    container.appendChild(daysWrapper);
+    container.appendChild(expandBtn);  // button always at the right
+  } else {
+    daysWrapper.innerHTML = '';
+  }
+
+  const today = new Date();
+  const range = dayRangeExpanded ? 21 : 7;
+
+  for (let i = 0; i < range; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dayAbbr = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const dayNum = d.getDate();
+
+    const el = document.createElement('div');
+    el.className = 'day-item';
+    el.dataset.day = dayAbbr.toLowerCase();
+    el.innerHTML = `
+      <p class="day-abbr">${dayAbbr}</p>
+      <p class="day-abbr">${dayNum}</p>
+    `;
+    daysWrapper.appendChild(el);
+  }
+
+  container.classList.toggle('expanded', dayRangeExpanded);
+  container.classList.toggle('collapsed', !dayRangeExpanded);
+
+  updateExpandIcon();
+}
+
+
+// Run once after DOMContentLoaded
+const daySelector = document.querySelector('.day-selector');
+daySelector.addEventListener('click', (e) => {
+  const day = e.target.closest('.day-item');
+  if (!day) return; // ignore clicks outside
+  console.log('Day clicked:', day.getAttribute('data-day'));
+
+  document.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
+  day.classList.add('active');
+  const selectedDay = day.getAttribute('data-day');
+  currentDay = selectedDay;
+  updateTasksForDay(selectedDay);
+});
