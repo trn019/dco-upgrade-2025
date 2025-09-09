@@ -384,17 +384,14 @@
 
 /* Active panel consumes remaining height in the frame */
 .tab-content {
-    display: none;    /* hide all by default */
-    flex: 1 1 auto;   /* NEW: also set on base, not just .active */
-    min-height: 0;    /* critical for nested scrollers */
-    overflow: hidden; /* avoid double scrolls; we'll scroll inner areas */
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
-.tab-content.active { 
-    display: block;
-    flex: 1 1 auto;     /* take remaining height */
-    min-height: 0;      /* CRITICAL for nested scrolls */
-    overflow: hidden;   /* we'll scroll specific inner areas */
+  .tab-content.active {
+    display: flex;
+    flex-direction: column;
   }
 
 .tab-content.active#room-screen { display: flex; flex-direction: column;}
@@ -477,6 +474,33 @@
     font-size: 12px;
     color: #666;
 }
+
+
+
+  /* Make tab-content a flex column so children can scroll */
+  #tasks-content {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /* Scrollable tasks area inside tasks tab */
+#tasks-for-day {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 8px;
+  }
+
+  /* Rooms tab stays normal */
+#rooms-content {
+    display: none; /* hidden by default */
+    flex-direction: column;
+  }
+
+  #rooms-content.active {
+    display: block; /* rooms grid shows normally */
+  }
 
 .status-green { background: #4caf50; }
 .status-yellow { background: #ff9800; }
@@ -1970,5 +1994,3 @@ textarea::placeholder {
 #recurringTaskModal .modal-page[data-page="2"] .form-actions .btn-save {
     width: auto;
   }
-
-  

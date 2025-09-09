@@ -1,31 +1,45 @@
 const taskData = {
-    thu: {
-      bedroom: [
-        { name: "Vacuum Floor", lastCleaned: "3 weeks ago", progress: 85, status: "Uh oh...", frequency: "Every week", progressType: "red", effort: "high" },
-        { name: "Organize Closet", lastCleaned: "3 weeks ago", progress: 60, status: "Getting dusty...", frequency: "Every month", progressType: "yellow", effort: "moderate" }
-      ],
-      kitchen: [
-        { name: "Clean Countertops", lastCleaned: "2 days ago", progress: 20, status: "Looking good!", frequency: "Every 3 days", progressType: "green", effort: "low" }
-      ]
-    },
-    fri: {
-      bedroom: [
-        { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" }
-      ],
-      kitchen: [
-        { name: "Wash Dishes", lastCleaned: "this morning", progress: 10, status: "Fresh!", frequency: "Daily", progressType: "green", effort: "low" },
-        { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" }
-      ]
-    },
-    sat: {
-      bedroom: [
-        { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" }
-      ],
-      kitchen: [
-        { name: "Deep Clean Fridge", lastCleaned: "1 month ago", progress: 90, status: "Overdue!", frequency: "Monthly", progressType: "red", effort: "high" }
-      ]
-    }
-};  
+  "thu-7": {
+    bedroom: [
+      { name: "Vacuum Floor", lastCleaned: "3 weeks ago", progress: 85, status: "Uh oh...", frequency: "Every week", progressType: "red", effort: "high" },
+      { name: "Organize Closet", lastCleaned: "3 weeks ago", progress: 60, status: "Getting dusty...", frequency: "Every month", progressType: "yellow", effort: "moderate" },
+      { name: "Change Sheets", lastCleaned: "1 week ago", progress: 50, status: "Needs fresh sheets", frequency: "Weekly", progressType: "yellow", effort: "moderate" }
+    ],
+    kitchen: [
+      { name: "Clean Countertops", lastCleaned: "2 days ago", progress: 20, status: "Looking good!", frequency: "Every 3 days", progressType: "green", effort: "low" },
+      { name: "Wash Dishes", lastCleaned: "yesterday", progress: 40, status: "Some dishes piling up", frequency: "Daily", progressType: "yellow", effort: "low" },
+      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Greasy again", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+      { name: "Take Out Trash", lastCleaned: "today", progress: 10, status: "Empty bin", frequency: "Daily", progressType: "green", effort: "low" }
+    ],
+    bathroom: [
+      { name: "Clean Mirror", lastCleaned: "4 days ago", progress: 60, status: "Getting spotted", frequency: "Weekly", progressType: "yellow", effort: "low" },
+      { name: "Scrub Shower", lastCleaned: "2 weeks ago", progress: 80, status: "Mildew starting", frequency: "Biweekly", progressType: "red", effort: "high" }
+    ],
+    living: [
+      { name: "Dust TV Stand", lastCleaned: "5 days ago", progress: 55, status: "Light dust visible", frequency: "Weekly", progressType: "yellow", effort: "low" }
+    ]
+  },
+
+  "fri-8": {
+    bedroom: [
+      { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" }
+    ],
+    kitchen: [
+      { name: "Wash Dishes", lastCleaned: "this morning", progress: 10, status: "Fresh!", frequency: "Daily", progressType: "green", effort: "low" },
+      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" }
+    ]
+  },
+
+  "sat-9": {
+    bedroom: [
+      { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" }
+    ],
+    kitchen: [
+      { name: "Deep Clean Fridge", lastCleaned: "1 month ago", progress: 90, status: "Overdue!", frequency: "Monthly", progressType: "red", effort: "high" }
+    ]
+  }
+};
+  
 
 const roomData = {
     bedroom: { emoji: "🛏️", tasks: 2 },
@@ -47,7 +61,8 @@ let currentSort = 'cleanliness'; // 'cleanliness' | 'effort-asc'
 
 const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
 
-let currentDay = 'thu';
+let currentDay = 'thu-7';
+updateTasksForDay(currentDay);
 let currentTab = 'tasks';
 let floatingButtonsVisible = false;
 
@@ -58,140 +73,86 @@ let selectedRepeat = 'On Monday';
 let selectedTime = 'Time';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Tab functionality
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Tab clicked:', tab.getAttribute('data-tab'));
-            
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            // Add active class to clicked tab
-            tab.classList.add('active');
-            
-            // Hide all tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            // Show selected tab content
-            const tabName = tab.getAttribute('data-tab');
-            const targetContent = document.getElementById(tabName + '-content');
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-            
-            currentTab = tabName;
-        });
+  // --- Tabs ---
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      const tabName = tab.getAttribute('data-tab');
+      const targetContent = document.getElementById(`${tabName}-content`);
+      if (targetContent) targetContent.classList.add('active');
+      currentTab = tabName;
     });
+  });
 
-    // Day item functionality
-    document.querySelectorAll('.day-item').forEach(day => {
-        day.addEventListener('click', () => {
-            console.log('Day clicked:', day.getAttribute('data-day'));
-            
-            // Remove active class from all day items
-            document.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
-            // Add active class to clicked day
-            day.classList.add('active');
-            
-            // Update tasks for selected day
-            const selectedDay = day.getAttribute('data-day');
-            currentDay = selectedDay;
-            updateTasksForDay(selectedDay);
-        });
-    });
+  // --- Day selector ---
+  renderDaySelector();  // ⬅️ builds Thu 7.., sets currentDay, calls updateTasksForDay()
 
-    // Room card functionality (for Rooms tab)
-    document.querySelectorAll('.room-card-tab').forEach(roomCard => {
-        roomCard.addEventListener('click', () => {
-            console.log('Room clicked:', roomCard.getAttribute('data-room'));
-            
-            // Remove active class from all room cards
-            document.querySelectorAll('.room-card-tab').forEach(r => r.classList.remove('active'));
-            // Add active class to clicked room
-            roomCard.classList.add('active');
-            
-            // Show tasks for selected room
-            const selectedRoom = roomCard.getAttribute('data-room');
-            showRoomTasks(selectedRoom);
-        });
-    });
-
-    // Shuffle button functionality
-    const shuffleBtn = document.querySelector('.shuffle-btn');
-    if (shuffleBtn) {
-        shuffleBtn.addEventListener('click', () => {
-            console.log('Shuffle clicked');
-            shuffleBtn.style.transform = 'rotate(180deg)';
-            setTimeout(() => {
-                shuffleBtn.style.transform = 'rotate(0deg)';
-            }, 300);
-            
-            // Show random task alert
-            alert('Random task: Clean the bathroom mirror!');
-        });
-    }
-
-    // Add task button with floating options
-    const addTaskBtn = document.querySelector('.add-task');
-    const taskOptions = document.getElementById('taskOptions');
-    
-    if (addTaskBtn && taskOptions) {
-        addTaskBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            console.log('Add task clicked');
-            
-            floatingButtonsVisible = !floatingButtonsVisible;
-            
-            if (floatingButtonsVisible) {
-                // Show floating buttons
-                taskOptions.classList.add('active');
-                addTaskBtn.classList.add('expanded');
-            } else {
-                // Hide floating buttons
-                taskOptions.classList.remove('active');
-                addTaskBtn.classList.remove('expanded');
-            }
-        });
-    }
-
-    // Handle clicks on floating task option buttons
-    document.querySelectorAll('.task-option-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const taskType = btn.getAttribute('data-type');
-            console.log('Task option clicked:', taskType);
-            
-            // Hide floating buttons
-            taskOptions.classList.remove('active');
-            addTaskBtn.classList.remove('expanded');
-            floatingButtonsVisible = false;
-            
-            // Show appropriate modal
-            if (taskType === 'one-time') {
-                showOneTimeTaskModal();
-            } else if (taskType === 'recurring') {
-                showRecurringTaskModal();
-            }
-        });
-    });
-
-    // Close floating buttons when clicking elsewhere
-    document.addEventListener('click', (e) => {
-        if (floatingButtonsVisible && !e.target.closest('.add-task') && !e.target.closest('.task-options')) {
-            taskOptions.classList.remove('active');
-            addTaskBtn.classList.remove('expanded');
-            floatingButtonsVisible = false;
-        }
-    });
-
-    // Initialize with current day's tasks
+  const daySelector = document.querySelector('.day-selector');
+  daySelector.addEventListener('click', (e) => {
+    const day = e.target.closest('.day-item');
+    if (!day) return;
+    document.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
+    day.classList.add('active');
+    currentDay = day.dataset.day;
     updateTasksForDay(currentDay);
-    
-    // Setup modal event listeners
-    setupModalEventListeners();
+  });
+
+  // --- Shuffle button ---
+  const shuffleBtn = document.querySelector('.shuffle-btn');
+  if (shuffleBtn) {
+    shuffleBtn.addEventListener('click', () => {
+      shuffleBtn.style.transform = 'rotate(180deg)';
+      setTimeout(() => { shuffleBtn.style.transform = 'rotate(0deg)'; }, 300);
+      alert('Random task: Clean the bathroom mirror!');
+    });
+  }
+
+  // --- Add task + floating options ---
+  const addTaskBtn = document.querySelector('.add-task');
+  const taskOptions = document.getElementById('taskOptions');
+
+  if (addTaskBtn && taskOptions) {
+    addTaskBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      floatingButtonsVisible = !floatingButtonsVisible;
+      taskOptions.classList.toggle('active', floatingButtonsVisible);
+      addTaskBtn.classList.toggle('expanded', floatingButtonsVisible);
+    });
+  }
+
+  document.querySelectorAll('.task-option-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const taskType = btn.dataset.type;
+      taskOptions.classList.remove('active');
+      addTaskBtn.classList.remove('expanded');
+      floatingButtonsVisible = false;
+      if (taskType === 'one-time') showOneTimeTaskModal();
+      if (taskType === 'recurring') showRecurringTaskModal();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (floatingButtonsVisible &&
+        !e.target.closest('.add-task') &&
+        !e.target.closest('.task-options')) {
+      taskOptions.classList.remove('active');
+      addTaskBtn.classList.remove('expanded');
+      floatingButtonsVisible = false;
+    }
+  });
+
+  // --- Setup modals ---
+  setupModalEventListeners();
+
+  // --- Sort dropdowns for rooms ---
+  sortRoomsGridAZ();
 });
+
 
 (function initAddRoomCard() {
   const grid = document.querySelector('.rooms-grid');
@@ -1605,43 +1566,49 @@ function renderDaySelector() {
   const container = document.querySelector('.day-selector');
   if (!container) return;
 
-  // Ensure structure: days-wrapper + expand button
-  let daysWrapper = container.querySelector('.days-wrapper');
   const expandBtn = container.querySelector('.expand-icon');
-  if (!daysWrapper) {
-    daysWrapper = document.createElement('div');
-    daysWrapper.className = 'days-wrapper';
-    container.innerHTML = '';          // clear old content
-    container.appendChild(daysWrapper);
-    container.appendChild(expandBtn);  // button always at the right
-  } else {
-    daysWrapper.innerHTML = '';
-  }
+  container.innerHTML = '';
 
-  const today = new Date();
+  // Anchor base date: Thu Dec 7, 2023
+  const baseDate = new Date(2023, 11, 7); 
   const range = dayRangeExpanded ? 21 : 7;
+  let firstDayEl = null;
 
   for (let i = 0; i < range; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
+    const d = new Date(baseDate);   // clone Dec 7
+    d.setDate(d.getDate() + i);     // ✅ advance relative to that clone
+
     const dayAbbr = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
     const dayNum = d.getDate();
 
     const el = document.createElement('div');
     el.className = 'day-item';
-    el.dataset.day = dayAbbr.toLowerCase();
+    el.dataset.day = `${dayAbbr.toLowerCase()}-${dayNum}`;
     el.innerHTML = `
       <p class="day-abbr">${dayAbbr}</p>
       <p class="day-abbr">${dayNum}</p>
     `;
-    daysWrapper.appendChild(el);
+    if (i === 0) firstDayEl = el;
+    container.appendChild(el);
   }
+
+  if (expandBtn) container.appendChild(expandBtn);
 
   container.classList.toggle('expanded', dayRangeExpanded);
   container.classList.toggle('collapsed', !dayRangeExpanded);
 
   updateExpandIcon();
+
+  // Default: highlight first day (Thu 7) and load tasks
+  if (firstDayEl) {
+    firstDayEl.classList.add('active');
+    currentDay = firstDayEl.dataset.day;
+    updateTasksForDay(currentDay);
+  }
 }
+
+
+
 
 
 // Run once after DOMContentLoaded
