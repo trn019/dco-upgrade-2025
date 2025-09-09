@@ -282,7 +282,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button class="back-btn">‹</button>
-                <h2>Add Task</h2>
+                <h2>One-time Task</h2>
                 <span class="close-modal">×</span>
               </div>
           
@@ -394,6 +394,134 @@
               
               </div>
             </div>
+
+       <!-- Recurring Task Modal -->
+       <div id="recurringTaskModal" class="modal modal--page">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="back-btn">‹</button>
+            <h2>Add Task</h2>
+            <span class="close-modal">×</span>
+          </div>
+      
+          <!-- PAGE 1: identical to One-time page 1 -->
+          <div class="modal-page is-active" data-page="1">
+            <form id="recurringTaskFormPage1" class="modal-page-body">
+              <div class="form-group">
+                <select id="recurringTaskRoom" class="dropdown-select" required>
+                  <option value="">Choose Room</option>
+                  <option value="bedroom">Bedroom</option>
+                  <option value="kitchen">Kitchen</option>
+                  <option value="bathroom">Bathroom</option>
+                  <option value="living">Living Room</option>
+                  <option value="laundry">Laundry Room</option>
+                  <option value="office">Office</option>
+                </select>
+              </div>
+      
+              <div class="form-group">
+                <select id="recurringTaskName" class="dropdown-select" required>
+                  <option value="">Select Task</option>
+                  <option value="vacuum">Vacuum Floor</option>
+                  <option value="dust">Dust Surfaces</option>
+                  <option value="organize">Organize Space</option>
+                  <option value="clean">General Cleaning</option>
+                  <option value="wash">Wash/Wipe Down</option>
+                  <option value="laundry">Do Laundry</option>
+                  <option value="dishes">Wash Dishes</option>
+                  <option value="custom">Custom Task...</option>
+                </select>
+              </div>
+      
+              <div class="form-group">
+                <label for="recurringTaskNotes">Notes</label>
+                <textarea id="recurringTaskNotes" placeholder="Jot down specifics, reminders, etc..." rows="4"></textarea>
+              </div>
+      
+              <div class="effort-level-group">
+                <h3>What is this task's effort level?</h3>
+                <div class="effort-options" id="recurringEffortOptions">
+                  <div class="effort-option" data-level="low">
+                    <div class="stars"><span class="star active">★</span><span class="star">★</span><span class="star">★</span></div>
+                    <span class="effort-label">Low</span>
+                  </div>
+                  <div class="effort-option" data-level="moderate">
+                    <div class="stars"><span class="star active">★</span><span class="star active">★</span><span class="star">★</span></div>
+                    <span class="effort-label">Moderate</span>
+                  </div>
+                  <div class="effort-option" data-level="high">
+                    <div class="stars"><span class="star active">★</span><span class="star active">★</span><span class="star active">★</span></div>
+                    <span class="effort-label">High</span>
+                  </div>
+                </div>
+              </div>
+            </form>
+      
+            <!-- Sticky footer Page 1 -->
+            <div class="form-actions">
+              <button type="button" id="recurringNextBtn" class="btn-save">Next</button>
+            </div>
+          </div>
+      
+          <!-- PAGE 2: your original frequency/time/notify UI -->
+          <div class="modal-page" data-page="2">
+            <form id="recurringTaskForm" class="modal-page-body">
+              <div class="frequency-section">
+                <div class="frequency-header">Every</div>
+      
+                <div class="day-picker-container">
+                  <div class="day-picker-header">Select Frequency</div>
+                  <div class="dual-picker">
+                    <div class="number-picker">
+                      <div class="picker-label">Number</div>
+                      <div class="picker-scroll" id="numberPickerScroll">
+                        <div class="picker-list" id="numberPickerList"></div>
+                      </div>
+                    </div>
+                    <div class="unit-picker">
+                      <div class="picker-label">Unit</div>
+                      <div class="picker-scroll" id="unitPickerScroll">
+                        <div class="picker-list" id="unitPickerList"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+      
+                <div class="repeat-section">
+                  <div class="repeat-row">
+                    <span>Repeat</span>
+                    <span class="repeat-value" id="repeatValue">On Monday ›</span>
+                  </div>
+                </div>
+      
+                <div class="time-section">
+                  <div class="time-row">
+                    <span>Time</span>
+                    <span class="time-value" id="timeValue">Time ›</span>
+                  </div>
+                </div>
+      
+                <div class="notify-section">
+                  <div class="notify-row">
+                    <span>Notify Me</span>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="recurringNotifyToggle" class="toggle-input">
+                      <label for="recurringNotifyToggle" class="toggle-label"></label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+      
+            <!-- Sticky footer Page 2 -->
+            <div class="form-actions">
+              <button type="button" id="recurringPrevBtn" class="btn-save" style="background:#e0e0e0;color:#333;">Back</button>
+              <button type="submit" form="recurringTaskForm" class="btn-save">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
             <nav>
                 <a href="../index.html">
                     <img src="../nav-img/home.png" alt="Home" style="width:24px;height:24px;">
@@ -410,104 +538,8 @@
             </nav>
           </div>
 
-        <!-- Recurring Task Modal -->
-        <div id="recurringTaskModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button class="back-btn" style="display: none;">‹</button>
-                    <h2>Add Task</h2>
-                    <span class="close-modal">×</span>
-                </div>
-                
-                <form id="recurringTaskForm">
-                    <div class="form-group">
-                        <select id="recurringTaskRoom" class="dropdown-select" required>
-                            <option value="">Choose Room</option>
-                            <option value="bedroom">Bedroom</option>
-                            <option value="kitchen">Kitchen</option>
-                            <option value="bathroom">Bathroom</option>
-                            <option value="living">Living Room</option>
-                            <option value="laundry">Laundry Room</option>
-                            <option value="office">Office</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <select id="recurringTaskName" class="dropdown-select" required>
-                            <option value="">Select Task</option>
-                            <option value="vacuum">Vacuum Floor</option>
-                            <option value="dust">Dust Surfaces</option>
-                            <option value="organize">Organize Space</option>
-                            <option value="clean">General Cleaning</option>
-                            <option value="wash">Wash/Wipe Down</option>
-                            <option value="laundry">Do Laundry</option>
-                            <option value="dishes">Wash Dishes</option>
-                            <option value="custom">Custom Task...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="recurringTaskNotes">Notes</label>
-                        <textarea id="recurringTaskNotes" placeholder="Jot down specifics, reminders, etc..." rows="4"></textarea>
-                    </div>
-                    
-                    <div class="frequency-section">
-                        <div class="frequency-header">Every</div>
-                        
-                        <div class="day-picker-container">
-                            <div class="day-picker-header">Select Frequency</div>
-                            <div class="dual-picker">
-                                <div class="number-picker">
-                                    <div class="picker-label">Number</div>
-                                    <div class="picker-scroll" id="numberPickerScroll">
-                                        <div class="picker-list" id="numberPickerList">
-                                            <!-- Numbers 1-30 will be generated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="unit-picker">
-                                    <div class="picker-label">Unit</div>
-                                    <div class="picker-scroll" id="unitPickerScroll">
-                                        <div class="picker-list" id="unitPickerList">
-                                            <!-- Units will be generated by JavaScript -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="repeat-section">
-                            <div class="repeat-row">
-                                <span>Repeat</span>
-                                <span class="repeat-value" id="repeatValue">On Monday ›</span>
-                            </div>
-                        </div>
-                        
-                        <div class="time-section">
-                            <div class="time-row">
-                                <span>Time</span>
-                                <span class="time-value" id="timeValue">Time ›</span>
-                            </div>
-                        </div>
-                        
-                        <div class="notify-section">
-                            <div class="notify-row">
-                                <span>Notify Me</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="recurringNotifyToggle" class="toggle-input">
-                                    <label for="recurringNotifyToggle" class="toggle-label"></label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">Save</button>
-                    </div>
-                </form>
-            </div>
-            
-        </div>
+
+  
 
         
 

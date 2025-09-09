@@ -488,44 +488,83 @@ function buildOneTimeReview() {
   `;
 }
 
+// ===== Recurring modal pager =====
+let recurringPage = 1;
 
-
-
+function gotoRecurringPage(n) {
+  recurringPage = n;
+  const modal = document.getElementById('recurringTaskModal');
+  modal.querySelectorAll('.modal-page').forEach(pg => {
+    pg.classList.toggle('is-active', pg.getAttribute('data-page') === String(n));
+  });
+}
 
 function showRecurringTaskModal() {
-    const modal = document.getElementById('recurringTaskModal');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+  modal.classList.add('modal--page');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  gotoRecurringPage(1);
 }
 
 function closeRecurringModal() {
-    const modal = document.getElementById('recurringTaskModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    // Reset form
-    document.getElementById('recurringTaskForm').reset();
-    
-    // Reset picker selections to defaults
-    document.querySelectorAll('#numberPickerList .picker-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    document.querySelectorAll('#unitPickerList .picker-item').forEach(item => {
-        item.classList.remove('selected');
-    });
-    
-    // Set defaults
-    document.querySelector('[data-number="7"]').classList.add('selected');
-    document.querySelector('[data-unit="days"]').classList.add('selected');
-    selectedNumber = 7;
-    selectedUnit = 'days';
-    
-    // Reset repeat and time values
-    selectedRepeat = 'On Monday';
-    selectedTime = 'Time';
-    document.getElementById('repeatValue').textContent = 'On Monday ›';
-    document.getElementById('timeValue').textContent = 'Time ›';
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+  document.getElementById('recurringTaskForm')?.reset();
+  document.getElementById('recurringTaskFormPage1')?.reset();
+  // reset picker selections, repeat/time defaults (you already have this)
+  document.querySelectorAll('#numberPickerList .picker-item')?.forEach(i => i.classList.remove('selected'));
+  document.querySelectorAll('#unitPickerList .picker-item')?.forEach(i => i.classList.remove('selected'));
+  document.querySelector('[data-number="7"]')?.classList.add('selected');
+  document.querySelector('[data-unit="days"]')?.classList.add('selected');
+  selectedNumber = 7; selectedUnit = 'days';
+  selectedRepeat = 'On Monday'; selectedTime = 'Time';
+  const rv = document.getElementById('repeatValue'); if (rv) rv.textContent = 'On Monday ›';
+  const tv = document.getElementById('timeValue');   if (tv) tv.textContent = 'Time ›';
 }
+
+// Wire up buttons (inside your existing setupModalEventListeners or after DOMContentLoaded)
+(function wireRecurringModal() {
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+
+  // Header X closes
+  modal.querySelector('.close-modal')?.addEventListener('click', closeRecurringModal);
+
+  // Header back: if on page 2 → page 1, else close
+  modal.querySelector('.back-btn')?.addEventListener('click', () => {
+    if (recurringPage > 1) gotoRecurringPage(recurringPage - 1);
+    else closeRecurringModal();
+  });
+
+  // Page 1 → Next (validate requireds)
+  document.getElementById('recurringNextBtn')?.addEventListener('click', () => {
+    const ok1 = document.getElementById('recurringTaskRoom').checkValidity();
+    const ok2 = document.getElementById('recurringTaskName').checkValidity();
+    if (!ok1 || !ok2) {
+      document.getElementById('recurringTaskFormPage1').reportValidity();
+      return;
+    }
+    gotoRecurringPage(2);
+  });
+
+  // Page 2 ← Back
+  document.getElementById('recurringPrevBtn')?.addEventListener('click', () => gotoRecurringPage(1));
+
+  // Effort picker (Page 1)
+  modal.querySelectorAll('#recurringEffortOptions .effort-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      modal.querySelectorAll('#recurringEffortOptions .effort-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  // Keep your existing handlers for: initializeDualPicker(), showRepeatOptions(), showTimeOptions()
+})();
+
 
 function showRepeatOptions() {
     const options = ['On Monday', 'On Tuesday', 'On Wednesday', 'On Thursday', 'On Friday', 'On Saturday', 'On Sunday', 'Weekdays', 'Weekends'];
