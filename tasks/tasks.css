@@ -1500,3 +1500,444 @@ textarea::placeholder {
     width: 100% !important;  /* take up the whole card width */
     max-width: none;
   }
+
+  /* Card container */
+#recurringTaskModal .frequency-section {
+    background: #fff;
+    border: 1px solid #dfe6ee;
+    border-radius: 12px;
+    margin: 16px 20px;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  /* Title row "Every" */
+  #recurringTaskModal .frequency-header {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0c4a7a;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f6;
+    margin: 0;
+    text-align: left;
+  }
+  
+  /* Remove the subheader line */
+  #recurringTaskModal .day-picker-header { display: none; }
+  
+  /* Picker container inside the card */
+  #recurringTaskModal .day-picker-container {
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    padding: 0 12px 12px;
+  }
+  
+  /* Two columns side by side */
+  #recurringTaskModal .dual-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: relative;
+    padding-top: 8px;
+  }
+  
+  /* Center highlight band spanning both columns */
+  #recurringTaskModal .dual-picker::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 40px;                 /* same as .picker-item height */
+    border-radius: 10px;
+    background: rgba(0, 150, 136, 0.22); /* soft teal like the mock */
+    pointer-events: none;
+  }
+  
+  /* Picker scrollers a bit taller */
+  #recurringTaskModal .picker-scroll {
+    height: 160px;                 /* up from 120 */
+    border: 1px solid #e0e6ea;
+  }
+  
+  /* Items */
+  #recurringTaskModal .picker-item {
+    height: 40px;                  /* align with highlight band */
+    font-size: 18px;
+  }
+  
+  /* Selected item styling (kept subtle since band supplies most of the emphasis) */
+  #recurringTaskModal .picker-item.selected {
+    color: #0b3d5c;
+    background: transparent;       /* band handles the bg */
+    font-weight: 600;
+  }
+  
+  /* Row look */
+#recurringTaskModal .repeat-row,
+#recurringTaskModal .time-row,
+#recurringTaskModal .notify-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e0e6ea;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 12px 20px;
+  color: #111;
+  font-size: 16px;
+}
+
+/* Right-side value with chevron */
+#recurringTaskModal .repeat-value::after,
+#recurringTaskModal .time-value::after {
+  content: "›";
+  margin-left: 8px;
+  opacity: 0.6;
+}
+
+#recurringTaskModal #oneTimeAllDay,
+#recurringTaskModal label[for="oneTimeAllDay"],
+#recurringTaskModal .row-check { display: none !important; }
+
+#oneTimeTaskModal .modal-page { display:none; }
+#oneTimeTaskModal .modal-page.is-active { display:flex; }
+
+/* Recurring modal: ensure page fills the modal and allows sticky footer */
+
+  
+#recurringTaskModal .modal-page-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Header is fixed height at the top (like one-time) */
+#recurringTaskModal .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+  }
+  
+  
+
+#recurringTaskModal #recurringNextBtn {
+  width: 100%;
+  border-radius: 12px;
+  padding: 14px 18px; /* same as one-time Next */
+  font-size: 16px;
+}
+
+/* Ensure the scrollable body leaves space for the sticky footer */
+#recurringTaskModal .modal-page[data-page="1"] .modal-page-body {
+    padding-bottom: 0px;             /* same visual spacing as one-time */
+  }
+
+  #recurringTaskModal .modal-page[data-page="1"] .form-actions { display: grid; }
+
+  
+  /* Make recurring modal page behave like one-time */
+
+  
+
+  
+/* Make the recurring modal structure mirror the one-time modal */
+#recurringTaskModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;           /* ensure the content fills the modal frame */
+    overflow: hidden;       /* header sticky, body scrolls */
+  }
+
+#recurringTaskModal .modal-page {
+    display: none;                /* hidden by default */
+    flex: 1 1 auto;               /* ⬅ fills available height */
+    min-height: 0;                /* ⬅ critical for nested scrollers */
+    flex-direction: column;
+  }
+  
+  #recurringTaskModal .modal-page.is-active {
+    display: flex;                /* show active page */
+  }
+  
+/* --- Normalize Recurring Page 1 to match One-time Page 1 --- */
+#recurringTaskModal .modal-page[data-page="1"] .modal-page-body {
+    flex: 0 0 auto;   /* 🚫 don't stretch to fill height */
+    min-height: auto; /* shrink to fit contents */
+  }
+  
+  /* Ensure form-group padding/margins are identical to one-time modal-scoped rule */
+  #recurringTaskModal .modal-page[data-page="1"] .form-group {
+    padding: 0 20px;   /* ← same as one-time */
+    margin: 18px 0;    /* ← same as one-time */
+  }
+  
+  /* Effort group block spacing like one-time */
+  #recurringTaskModal .modal-page[data-page="1"] .effort-level-group {
+    /* match one-time block look */
+    padding: 20px 25px;
+    background: #f8f8f8;
+    margin: 20px 0;
+    border: none;
+  }
+
+  #recurringTaskModal .modal-page[data-page="1"] .effort-options {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+  }
+
+  #recurringTaskModal .modal-page[data-page="1"] .effort-option:hover {
+    background: #f0f0f0;          /* one-time */
+  }
+  #recurringTaskModal .modal-page[data-page="1"] .effort-option.selected {
+    border-color: #4db6ac;        /* one-time */
+    background: #f0f8ff;          /* one-time */
+  }
+  
+  
+  #recurringTaskModal .modal-page[data-page="1"] .effort-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 10px;           /* one-time */
+    border-radius: 12px;          /* one-time */
+    background: #fff;             /* one-time */
+    border: 2px solid transparent;
+    transition: all .2s;
+  }
+
+
+  /* Inputs look/feel identical */
+  #recurringTaskModal .modal-page[data-page="1"] .dropdown-select,
+  #recurringTaskModal .modal-page[data-page="1"] textarea {
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+  
+  /* Footer (Next) identical placement/spacing */
+/* --- Force show Recurring Page 1 Next button --- */
+#recurringTaskModal .modal-page[data-page="1"] .form-actions {
+    display: flex !important;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    min-height: 56px;         /* give it some presence */
+    background: #fff;         /* ensure contrast */
+    z-index: 1;               /* above the scrolling body */
+  }
+  
+  #recurringTaskModal .modal-page[data-page="1"] .btn-save {
+    display: inline-block !important;
+    width: 100%;              /* like one-time; remove if you prefer auto width */
+    max-width: 420px;         /* optional – keeps it tidy */
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* If a global reset nukes buttons, restore the look */
+#recurringTaskModal .modal-page[data-page="1"] button.btn-save {
+    border: none;
+    background: #1976d2;
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+/* Stars + labels (match one-time) */
+#recurringTaskModal .modal-page[data-page="1"] .stars { gap: 2px; margin-bottom: 8px; }
+#recurringTaskModal .modal-page[data-page="1"] .star  { font-size: 20px; color: #ddd; transition: color .2s; }
+#recurringTaskModal .modal-page[data-page="1"] .star.active { color: #ffc107; }
+#recurringTaskModal .modal-page[data-page="1"] .effort-label { font-size: 12px; font-weight: 500; color: #666; }
+
+#recurringTaskModal .modal-page[data-page="1"] .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+    display: block;               /* one-time uses block */
+  }
+
+  #recurringTaskModal .modal-page[data-page="1"] .btn-save {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 15px 40px;           /* one-time */
+    border-radius: 25px;          /* one-time pill */
+    font-size: 16px;              /* one-time */
+    font-weight: 500;
+    width: 100%;                  /* full-width like one-time UX */
+    cursor: pointer;
+    transition: all .2s;
+  }
+  #recurringTaskModal .modal-page[data-page="1"] .btn-save:hover {
+    background: #1565c0;
+    transform: translateY(-1px);
+  }
+  
+  /* Guard against Page 2 styles leaking into Page 1 */
+  #recurringTaskModal .modal-page[data-page="1"] .frequency-section,
+  #recurringTaskModal .modal-page[data-page="1"] .row,
+  #recurringTaskModal .modal-page[data-page="1"] .row-check,
+  #recurringTaskModal .modal-page[data-page="1"] .row-nav {
+    all: unset;                   /* nuke card/row look that belongs to Page 2 */
+  }
+
+/* Show/hide the new sub-page like other pages */
+#recurringTaskModal .modal-page[data-page="repeat"] {
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+  }
+  #recurringTaskModal .modal-page[data-page="repeat"].is-active { display: flex; }
+  
+  /* Repeat page look */
+  #recurringTaskModal .repeat-page {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #f7fbff; /* subtle light background like your mock */
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  
+  #recurringTaskModal .repeat-title {
+    margin: 16px 0 8px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0c4a7a;
+  }
+  
+  /* Big touch-friendly rows */
+  #recurringTaskModal .repeat-row-lg {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 18px 22px;
+    font-size: 18px;
+    background: transparent;
+    border-bottom: 1px solid #e6edf2;
+    gap: 12px;
+    cursor: pointer;
+  }
+  
+  /* Larger checkbox to match mock */
+  #recurringTaskModal .repeat-row-lg .repeat-day {
+    width: 22px;
+    height: 22px;
+    transform: scale(1.1);
+    accent-color: #1976d2; /* modern browsers */
+  }
+  
+  /* Use the global sticky header; footer not needed on this subpage */
+  
+
+  /* Inline time accordion */
+.time-accordion[hidden] { display: none; }
+.time-accordion {
+  margin: 8px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0,150,136,0.22);
+}
+
+/* 3-column scrollers with highlight band */
+.time-picker {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(0,150,136,0.18);
+}
+.time-picker::after {
+  content: "";
+  position: absolute;
+  left: 8px; right: 8px; top: 50%;
+  transform: translateY(-50%);
+  height: 40px; border-radius: 10px;
+  background: rgba(0,150,136,0.35);
+  pointer-events: none;
+}
+
+.time-picker .picker-scroll {
+  height: 180px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: y proximity;
+  border-radius: 8px;
+  background: transparent;
+}
+.time-picker .picker-list { padding: 40px 0; }
+
+.time-picker .picker-item {
+  height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 500; color: #222;
+  scroll-snap-align: center;
+}
+.time-picker .picker-item.selected { color: #0b3d5c; font-weight: 700; }
+
+/* Done button row */
+.time-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+.time-actions .btn-save { padding: 10px 16px; border-radius: 12px; }
+
+/* Page 2 layout fixes */
+#recurringTaskModal .modal-page[data-page="2"] {
+    display: none;
+    flex: 1 1 auto;          /* fill modal height */
+    min-height: 0;           /* allow scroller to shrink */
+    flex-direction: column;
+  }
+  #recurringTaskModal .modal-page[data-page="2"].is-active {
+    display: flex;
+  }
+  
+  #recurringTaskModal .modal-page[data-page="2"] .modal-page-body {
+    flex: 0 0 auto;             /* shrink-wrap instead of stretching */
+    max-height: 60vh;           /* ⬅️ adjust: 50vh / 60vh / 70vh depending on taste */
+    overflow-y: auto;           /* scroll only the body if too tall */
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 12px;        /* space above the footer */
+    padding: 0 20px 12px;       /* inner padding */
+  }
+  
+/* Footer: flex container pinned to bottom */
+#recurringTaskModal .modal-page[data-page="2"] .form-actions {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #eee;
+  padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+  display: flex !important;     /* override any earlier grid */
+  align-items: center;
+  justify-content: flex-end;   /* we'll push the button with margin-left:auto */
+}
+  
+#recurringSaveBtn {
+    display: block;                /* ignore inline spacing quirks */
+    width: 50% !important;         /* half the footer width */
+    max-width: none;               /* ignore earlier 50% max-width if present */
+    margin-left: auto !important;  /* pushes it to the right edge */
+    text-align: center;
+  }
+
+/* Neutralize any global .btn-save that forces full-width */
+#recurringTaskModal .modal-page[data-page="2"] .form-actions .btn-save {
+    width: auto;
+  }

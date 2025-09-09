@@ -400,7 +400,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <button class="back-btn">‹</button>
-            <h2>Add Task</h2>
+            <h2>Recurring Task</h2>
             <span class="close-modal">×</span>
           </div>
       
@@ -490,16 +490,37 @@
                 <div class="repeat-section">
                   <div class="repeat-row">
                     <span>Repeat</span>
-                    <span class="repeat-value" id="repeatValue">On Monday ›</span>
+                    <span class="repeat-value" id="repeatValue">On Monday</span>
                   </div>
                 </div>
       
-                <div class="time-section">
-                  <div class="time-row">
-                    <span>Time</span>
-                    <span class="time-value" id="timeValue">Time ›</span>
-                  </div>
-                </div>
+                <!-- Time section (Page 2) -->
+<div class="time-section">
+    <button type="button" class="row row-nav" id="recurringStartRow">
+      <span>Start</span>
+      <span class="row-value" id="recurringStartVal">10:00 AM</span>
+    </button>
+    <div id="startTimeAcc" class="time-accordion" hidden>
+      <div class="time-picker">
+        <div class="picker-scroll" id="startHourScroll"><div class="picker-list" id="startHourList"></div></div>
+        <div class="picker-scroll" id="startMinuteScroll"><div class="picker-list" id="startMinuteList"></div></div>
+        <div class="picker-scroll" id="startPeriodScroll"><div class="picker-list" id="startPeriodList"></div></div>
+      </div>
+    </div>
+  
+    <button type="button" class="row row-nav" id="recurringEndRow" style="margin-top:10px;">
+      <span>End</span>
+      <span class="row-value" id="recurringEndVal">1:00 PM</span>
+    </button>
+    <div id="endTimeAcc" class="time-accordion" hidden>
+      <div class="time-picker">
+        <div class="picker-scroll" id="endHourScroll"><div class="picker-list" id="endHourList"></div></div>
+        <div class="picker-scroll" id="endMinuteScroll"><div class="picker-list" id="endMinuteList"></div></div>
+        <div class="picker-scroll" id="endPeriodScroll"><div class="picker-list" id="endPeriodList"></div></div>
+      </div>
+    </div>
+  </div>
+  
       
                 <div class="notify-section">
                   <div class="notify-row">
@@ -515,10 +536,54 @@
       
             <!-- Sticky footer Page 2 -->
             <div class="form-actions">
-              <button type="button" id="recurringPrevBtn" class="btn-save" style="background:#e0e0e0;color:#333;">Back</button>
+
               <button type="submit" form="recurringTaskForm" class="btn-save">Save</button>
             </div>
           </div>
+
+          <!-- PAGE "repeat": day-of-week picker -->
+<div class="modal-page" data-page="repeat" aria-labelledby="repeatPickerTitle">
+    <div class="modal-page-body repeat-page">
+      <h3 id="repeatPickerTitle" class="repeat-title">Repeat</h3>
+  
+      <label class="repeat-row-lg">
+        <span>Sunday</span>
+        <input type="checkbox" class="repeat-day" data-day="sun" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Monday</span>
+        <input type="checkbox" class="repeat-day" data-day="mon" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Tuesday</span>
+        <input type="checkbox" class="repeat-day" data-day="tue" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Wednesday</span>
+        <input type="checkbox" class="repeat-day" data-day="wed" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Thursday</span>
+        <input type="checkbox" class="repeat-day" data-day="thu" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Friday</span>
+        <input type="checkbox" class="repeat-day" data-day="fri" />
+      </label>
+  
+      <label class="repeat-row-lg">
+        <span>Saturday</span>
+        <input type="checkbox" class="repeat-day" data-day="sat" />
+      </label>
+    </div>
+  </div>
+  
+
         </div>
       </div>
 

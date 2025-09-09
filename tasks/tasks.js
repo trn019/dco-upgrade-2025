@@ -335,7 +335,7 @@ if (effortGroup) {
 
 
   // your existing initializeDualPicker();
-  initializeDualPicker();
+  // initializeDualPicker();
 }
 
 
@@ -343,7 +343,15 @@ function initializeDualPicker() {
     // Initialize number picker (1-30)
     const numberPickerList = document.getElementById('numberPickerList');
     const numberPickerScroll = document.getElementById('numberPickerScroll');
-    
+    // Initialize unit picker
+    const unitPickerList = document.getElementById('unitPickerList');
+    const unitPickerScroll = document.getElementById('unitPickerScroll');
+    const units = ['days', 'weeks', 'months', 'years'];
+
+    if (!numberPickerList || !unitPickerList) return;
+  numberPickerList.innerHTML = '';
+  unitPickerList.innerHTML = '';
+
     for (let i = 1; i <= 30; i++) {
         const numberItem = document.createElement('div');
         numberItem.className = 'picker-item';
@@ -370,10 +378,7 @@ function initializeDualPicker() {
         numberPickerList.appendChild(numberItem);
     }
     
-    // Initialize unit picker
-    const unitPickerList = document.getElementById('unitPickerList');
-    const unitPickerScroll = document.getElementById('unitPickerScroll');
-    const units = ['days', 'weeks', 'months', 'years'];
+    
     
     units.forEach((unit, index) => {
         const unitItem = document.createElement('div');
@@ -491,13 +496,11 @@ function buildOneTimeReview() {
 // ===== Recurring modal pager =====
 let recurringPage = 1;
 
-function gotoRecurringPage(n) {
-  recurringPage = n;
-  const modal = document.getElementById('recurringTaskModal');
-  modal.querySelectorAll('.modal-page').forEach(pg => {
-    pg.classList.toggle('is-active', pg.getAttribute('data-page') === String(n));
-  });
-}
+
+
+//check if this is correct
+let recurringPickerBuilt = false;
+
 
 function showRecurringTaskModal() {
   const modal = document.getElementById('recurringTaskModal');
@@ -513,18 +516,23 @@ function closeRecurringModal() {
   if (!modal) return;
   modal.style.display = 'none';
   document.body.style.overflow = 'auto';
+
+  // clear forms as you already do...
   document.getElementById('recurringTaskForm')?.reset();
   document.getElementById('recurringTaskFormPage1')?.reset();
-  // reset picker selections, repeat/time defaults (you already have this)
-  document.querySelectorAll('#numberPickerList .picker-item')?.forEach(i => i.classList.remove('selected'));
-  document.querySelectorAll('#unitPickerList .picker-item')?.forEach(i => i.classList.remove('selected'));
-  document.querySelector('[data-number="7"]')?.classList.add('selected');
-  document.querySelector('[data-unit="days"]')?.classList.add('selected');
+
+  // clear picker DOM to avoid duplicates next open
+  document.getElementById('numberPickerList')?.replaceChildren();
+  document.getElementById('unitPickerList')?.replaceChildren();
+
+  // reset state
+  recurringPickerBuilt = false;
   selectedNumber = 7; selectedUnit = 'days';
   selectedRepeat = 'On Monday'; selectedTime = 'Time';
   const rv = document.getElementById('repeatValue'); if (rv) rv.textContent = 'On Monday ›';
   const tv = document.getElementById('timeValue');   if (tv) tv.textContent = 'Time ›';
 }
+
 
 // Wire up buttons (inside your existing setupModalEventListeners or after DOMContentLoaded)
 (function wireRecurringModal() {
@@ -534,11 +542,6 @@ function closeRecurringModal() {
   // Header X closes
   modal.querySelector('.close-modal')?.addEventListener('click', closeRecurringModal);
 
-  // Header back: if on page 2 → page 1, else close
-  modal.querySelector('.back-btn')?.addEventListener('click', () => {
-    if (recurringPage > 1) gotoRecurringPage(recurringPage - 1);
-    else closeRecurringModal();
-  });
 
   // Page 1 → Next (validate requireds)
   document.getElementById('recurringNextBtn')?.addEventListener('click', () => {
@@ -549,6 +552,7 @@ function closeRecurringModal() {
       return;
     }
     gotoRecurringPage(2);
+    initializeDualPicker();
   });
 
   // Page 2 ← Back
@@ -565,24 +569,431 @@ function closeRecurringModal() {
   // Keep your existing handlers for: initializeDualPicker(), showRepeatOptions(), showTimeOptions()
 })();
 
+// ---- State for repeat days (sun..sat) ----
+const DOW_ORDER = ['sun','mon','tue','wed','thu','fri','sat'];
+let selectedRepeatDays = new Set(); // mirrors 'selectedRepeat' summary
 
+// Replace your existing showRepeatOptions() to open the sub-page
 function showRepeatOptions() {
-    const options = ['On Monday', 'On Tuesday', 'On Wednesday', 'On Thursday', 'On Friday', 'On Saturday', 'On Sunday', 'Weekdays', 'Weekends'];
-    const choice = prompt('Choose repeat option:\n' + options.map((opt, i) => `${i + 1}. ${opt}`).join('\n'));
-    
-    if (choice && choice >= 1 && choice <= options.length) {
-        selectedRepeat = options[choice - 1];
-        document.getElementById('repeatValue').textContent = selectedRepeat + ' ›';
-    }
+  openRepeatPicker();
 }
 
-function showTimeOptions() {
-    const time = prompt('Enter time (e.g., 9:00 AM, 2:30 PM):');
-    if (time && time.trim()) {
-        selectedTime = time.trim();
-        document.getElementById('timeValue').textContent = selectedTime + ' ›';
-    }
+function openRepeatPicker() {
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+
+  // Activate the repeat page, hide page 2
+  modal.querySelector('[data-page="2"]')?.classList.remove('is-active');
+  const pg = modal.querySelector('[data-page="repeat"]');
+  pg?.classList.add('is-active');
+
+  // Header title -> "Repeat"
+  const titleEl = modal.querySelector('.modal-header h2');
+  if (titleEl) {
+    titleEl.textContent = '';              // visually empty
+    titleEl.setAttribute('aria-hidden','true'); // don't announce blank heading
+  }
+
+  // Mark we're on the subpage for back behavior
+  recurringPage = 'repeat';
+
+  // Initialize checkboxes from current summary (selectedRepeat) if empty
+  if (selectedRepeatDays.size === 0) hydrateDaysFromSummary();
+
+  // Reflect current set into checkboxes
+  pg.querySelectorAll('.repeat-day').forEach(cb => {
+    const key = cb.dataset.day;
+    cb.checked = selectedRepeatDays.has(key);
+  });
+
+  // Wire change handlers (idempotent)
+  if (!pg.dataset.wired) {
+    pg.addEventListener('change', (e) => {
+      const cb = e.target.closest('.repeat-day');
+      if (!cb) return;
+      const key = cb.dataset.day;
+      if (!key) return;
+      if (cb.checked) selectedRepeatDays.add(key);
+      else selectedRepeatDays.delete(key);
+      // Optional: immediate summary preview (not visible on this page)
+    });
+    pg.dataset.wired = '1';
+  }
 }
+
+function closeRepeatPicker() {
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+
+  // Build summary text and push to Page 2
+  selectedRepeat = summarizeRepeatDays(selectedRepeatDays);
+  const rv = document.getElementById('repeatValue');
+  if (rv) rv.textContent = selectedRepeat + ' ›';
+
+  // Return to Page 2
+  modal.querySelector('[data-page="repeat"]')?.classList.remove('is-active');
+  modal.querySelector('[data-page="2"]')?.classList.add('is-active');
+
+  // Restore header title
+  const titleEl = modal.querySelector('.modal-header h2');
+  if (titleEl) {
+    titleEl.textContent = 'Recurring Task'; // restore
+    titleEl.removeAttribute('aria-hidden');
+  }
+
+  recurringPage = 2;
+}
+
+(function installSingleRecurringBackHandler() {
+  const modal = document.getElementById('recurringTaskModal');
+  if (!modal) return;
+  const backBtn = modal.querySelector('.modal-header .back-btn');
+  if (!backBtn) return;
+
+  // Remove any previous listeners you may have attached
+  backBtn.replaceWith(backBtn.cloneNode(true));
+  const freshBackBtn = modal.querySelector('.modal-header .back-btn');
+
+  freshBackBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();   // <-- prevent other handlers from firing
+
+    const repeatPage = modal.querySelector('.modal-page[data-page="repeat"]');
+    const onRepeat   = repeatPage && repeatPage.classList.contains('is-active');
+
+    if (onRepeat) {
+      // go back to Page 2 (stay inside recurring)
+      closeRepeatPicker();          // your function that switches repeat -> page 2
+      return;
+    }
+
+    if (recurringPage === 2) {
+      gotoRecurringPage(1);
+      return;
+    }
+
+    // recurringPage is 1 (or anything else) → close
+    closeRecurringModal();
+  });
+})();
+
+
+
+// Ensure Page 2's "Repeat" row opens this picker
+
+
+let recurringStart = '10:00 AM';
+let recurringEnd   = '1:00 PM';
+
+function parseTime(str){
+  const s = (str||'').trim().toUpperCase();
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)$/);
+  if(!m) return {h:10,m:0,p:'AM'};
+  let h = Math.min(12, Math.max(1, parseInt(m[1],10)||10));
+  let mm = Math.min(59, Math.max(0, parseInt(m[2]||'0',10)));
+  const p = m[3]==='PM' ? 'PM' : 'AM';
+  return {h, m:mm, p};
+}
+function fmtTime(t){ return `${t.h}:${String(t.m).padStart(2,'0')} ${t.p}`; }
+
+function buildInlineTimeLists(prefix){
+  // prefix = 'start' | 'end'
+  const hourList   = document.getElementById(`${prefix}HourList`);
+  const minuteList = document.getElementById(`${prefix}MinuteList`);
+  const periodList = document.getElementById(`${prefix}PeriodList`);
+  if (!hourList || hourList.dataset.built) return;
+
+  // Hours
+  for(let i=1;i<=12;i++){
+    const el = document.createElement('div');
+    el.className = 'picker-item';
+    el.dataset.hour = i;
+    el.textContent = i;
+    el.addEventListener('click', () => selectHour(prefix, i));
+    hourList.appendChild(el);
+  }
+  // Minutes 00..55 step 5
+  for(let i=0;i<60;i+=5){
+    const el = document.createElement('div');
+    el.className = 'picker-item';
+    el.dataset.minute = i;
+    el.textContent = String(i).padStart(2,'0');
+    el.addEventListener('click', () => selectMinute(prefix, i));
+    minuteList.appendChild(el);
+  }
+  // Period
+  ['AM','PM'].forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'picker-item';
+    el.dataset.period = p;
+    el.textContent = p;
+    el.addEventListener('click', () => selectPeriod(prefix, p));
+    periodList.appendChild(el);
+  });
+
+  hourList.dataset.built = minuteList.dataset.built = periodList.dataset.built = '1';
+}
+
+function markSelected(listEl, attr, val){
+  listEl.querySelectorAll('.picker-item').forEach(i=>{
+    i.classList.toggle('selected', String(i.dataset[attr])===String(val));
+  });
+}
+function centerSelected(scrollEl, itemEl){
+  if(!scrollEl || !itemEl) return;
+  const top = itemEl.offsetTop - (scrollEl.clientHeight/2) + (itemEl.offsetHeight/2);
+  scrollEl.scrollTop = top;
+}
+function snapBind(scrollEl, itemSelector, onSnap){
+  if(!scrollEl) return;
+  let t;
+  scrollEl.addEventListener('scroll', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      const {top, height} = scrollEl.getBoundingClientRect();
+      const centerY = top + height/2;
+      const items = [...scrollEl.querySelectorAll(itemSelector)];
+      let closest=null, best=1e9;
+      for(const el of items){
+        const r = el.getBoundingClientRect();
+        const dy = Math.abs((r.top+r.height/2)-centerY);
+        if(dy<best){best=dy; closest=el;}
+      }
+      if(closest){
+        const targetTop = closest.offsetTop - (scrollEl.clientHeight/2) + (closest.offsetHeight/2);
+        scrollEl.scrollTo({top: targetTop, behavior: 'smooth'});
+        onSnap?.(closest);
+      }
+    }, 90);
+  });
+}
+
+function openTimeAccordion(which){
+  // which = 'start' | 'end'
+  const acc = document.getElementById(which==='start' ? 'startTimeAcc' : 'endTimeAcc');
+  const other = document.getElementById(which==='start' ? 'endTimeAcc' : 'startTimeAcc');
+
+  // close the other if open
+  if (other && !other.hidden) other.hidden = true;
+
+  // build lists once
+  buildInlineTimeLists(which);
+
+  // sync current value → selection
+  const t = parseTime(which==='start' ? recurringStart : recurringEnd);
+  const hourList = document.getElementById(`${which}HourList`);
+  const minuteList = document.getElementById(`${which}MinuteList`);
+  const periodList = document.getElementById(`${which}PeriodList`);
+  const hourScroll = document.getElementById(`${which}HourScroll`);
+  const minuteScroll = document.getElementById(`${which}MinuteScroll`);
+  const periodScroll = document.getElementById(`${which}PeriodScroll`);
+
+  markSelected(hourList,'hour',t.h);
+  markSelected(minuteList,'minute',t.m);
+  markSelected(periodList,'period',t.p);
+
+  // center selections
+  queueMicrotask(()=>{
+    centerSelected(hourScroll, hourList.querySelector(`[data-hour="${t.h}"]`));
+    centerSelected(minuteScroll, minuteList.querySelector(`[data-minute="${t.m}"]`));
+    centerSelected(periodScroll, periodList.querySelector(`[data-period="${t.p}"]`));
+  });
+
+  // snap on scroll stop
+  snapBind(hourScroll,'.picker-item',(el)=>selectHour(which, +el.dataset.hour, false));
+  snapBind(minuteScroll,'.picker-item',(el)=>selectMinute(which, +el.dataset.minute, false));
+  snapBind(periodScroll,'.picker-item',(el)=>selectPeriod(which, el.dataset.period, false));
+
+  // show/hide
+  acc.hidden = !acc.hidden;
+}
+
+function selectHour(which, h, center=true){
+  const list = document.getElementById(`${which}HourList`);
+  const scroll = document.getElementById(`${which}HourScroll`);
+  markSelected(list,'hour',h);
+  if(center) centerSelected(scroll, list.querySelector(`[data-hour="${h}"]`));
+  commitInlineTime(which);
+}
+function selectMinute(which, m, center=true){
+  const list = document.getElementById(`${which}MinuteList`);
+  const scroll = document.getElementById(`${which}MinuteScroll`);
+  markSelected(list,'minute',m);
+  if(center) centerSelected(scroll, list.querySelector(`[data-minute="${m}"]`));
+  commitInlineTime(which);
+}
+function selectPeriod(which, p, center=true){
+  const list = document.getElementById(`${which}PeriodList`);
+  const scroll = document.getElementById(`${which}PeriodScroll`);
+  markSelected(list,'period',p);
+  if(center) centerSelected(scroll, list.querySelector(`[data-period="${p}"]`));
+  commitInlineTime(which);
+}
+
+function commitInlineTime(which){
+  const h = +document.querySelector(`#${which}HourList .picker-item.selected`)?.dataset.hour || 10;
+  const m = +document.querySelector(`#${which}MinuteList .picker-item.selected`)?.dataset.minute || 0;
+  const p = document.querySelector(`#${which}PeriodList .picker-item.selected`)?.dataset.period || 'AM';
+  const val = fmtTime({h,m,p});
+  if (which==='start') {
+    recurringStart = val;
+    const el = document.getElementById('recurringStartVal'); if (el) el.textContent = val;
+  } else {
+    recurringEnd = val;
+    const el = document.getElementById('recurringEndVal'); if (el) el.textContent = val;
+  }
+}
+
+// Save handler for Recurring Page 2
+document.getElementById('recurringTaskForm')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  // Read Page 1 fields
+  const room   = document.getElementById('recurringTaskRoom')?.value || '';
+  const task   = document.getElementById('recurringTaskName')?.value || '';
+  const notes  = document.getElementById('recurringTaskNotes')?.value || '';
+  const effort = document.querySelector('#recurringEffortOptions .effort-option.selected')?.dataset.level || 'moderate';
+
+  // Read Page 2 fields
+  const notify = document.getElementById('recurringNotifyToggle')?.checked || false;
+
+  // You already maintain these in state:
+  // selectedNumber, selectedUnit, selectedRepeatDays (Set), recurringStart, recurringEnd
+  const repeatSummary = summarizeRepeatDays(selectedRepeatDays); // "Weekdays", "On Monday", "Mon, Wed", etc.
+
+  const payload = {
+    type: 'recurring',
+    room,
+    task,
+    notes,
+    effort,
+    every: { number: selectedNumber, unit: selectedUnit }, // e.g., {number: 2, unit: 'weeks'}
+    repeat: {
+      days: Array.from(selectedRepeatDays),                 // ['mon','wed','fri']
+      summary: repeatSummary,
+    },
+    time: {
+      start: recurringStart,                                // e.g., "10:00 AM"
+      end:   recurringEnd,                                  // e.g., "1:00 PM"
+    },
+    notify
+  };
+
+  console.log('Save recurring task:', payload);
+
+  // (Optional) quick UX touch: collapse any open inline pickers before close
+  document.getElementById('startTimeAcc')?.setAttribute('hidden','');
+  document.getElementById('endTimeAcc')?.setAttribute('hidden','');
+
+  // Success feedback (replace with real persistence later)
+  // alert('Recurring task saved!');
+
+  // Close modal
+  closeRecurringModal();
+});
+
+
+function wireRepeatTimeRows(){
+  const repeatRow = document.querySelector('#recurringTaskModal .repeat-row');
+  const startRow  = document.getElementById('recurringStartRow');
+  const endRow    = document.getElementById('recurringEndRow');
+
+  // Repeat row → open subpage
+  if (repeatRow && !repeatRow.dataset.wired){
+    repeatRow.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      // collapse inline pickers so nothing blocks the tap
+      document.getElementById('startTimeAcc')?.setAttribute('hidden','');
+      document.getElementById('endTimeAcc')?.setAttribute('hidden','');
+      openRepeatPicker();
+    });
+    repeatRow.dataset.wired = '1';
+  }
+
+  // Start/End inline accordions
+  if (startRow && !startRow.dataset.wired){
+    startRow.addEventListener('click', ()=>openTimeAccordion('start'));
+    startRow.dataset.wired = '1';
+  }
+  if (endRow && !endRow.dataset.wired){
+    endRow.addEventListener('click', ()=>openTimeAccordion('end'));
+    endRow.dataset.wired = '1';
+  }
+
+  // Click-away (install once)
+  if (!document.body.dataset.timeClickAway){
+    document.addEventListener('click', (e)=>{
+      const withinStart = e.target.closest('#startTimeAcc') || e.target.closest('#recurringStartRow');
+      const withinEnd   = e.target.closest('#endTimeAcc')   || e.target.closest('#recurringEndRow');
+      if (!withinStart) document.getElementById('startTimeAcc')?.setAttribute('hidden','');
+      if (!withinEnd)   document.getElementById('endTimeAcc')?.setAttribute('hidden','');
+    });
+    document.body.dataset.timeClickAway = '1';
+  }
+}
+
+
+// keep the row-values in sync when entering page 2
+function gotoRecurringPage(n){
+  recurringPage = n;
+  const modal = document.getElementById('recurringTaskModal');
+  modal.querySelectorAll('.modal-page').forEach(pg=>{
+    pg.classList.toggle('is-active', pg.getAttribute('data-page')===String(n));
+  });
+
+  if (n === 2) {
+    if (!recurringPickerBuilt) { initializeDualPicker(); recurringPickerBuilt = true; }
+    wireRepeatTimeRows();  // ← required for Repeat + Start/End
+    // keep values in sync:
+    const sv = document.getElementById('recurringStartVal'); if (sv) sv.textContent = recurringStart;
+    const ev = document.getElementById('recurringEndVal');   if (ev) ev.textContent = recurringEnd;
+  }
+  
+}
+
+
+// Convert the Set to a human summary like "Weekdays", "Weekends", "On Monday", "Mon, Wed, Fri"
+function summarizeRepeatDays(set) {
+  const arr = DOW_ORDER.filter(d => set.has(d));
+  if (arr.length === 0) return 'Off';             // nothing selected
+  if (equals(arr, ['mon','tue','wed','thu','fri'])) return 'Weekdays';
+  if (equals(arr, ['sat','sun'])) return 'Weekends';
+  if (arr.length === 1) return 'On ' + labelFor(arr[0]);
+  return arr.map(labelForShort).join(', ');
+}
+function equals(a, b) { return a.length === b.length && a.every((v,i)=>v===b[i]); }
+function labelFor(d) {
+  return ({
+    sun:'Sunday', mon:'Monday', tue:'Tuesday', wed:'Wednesday',
+    thu:'Thursday', fri:'Friday', sat:'Saturday'
+  })[d] || d;
+}
+function labelForShort(d) {
+  return ({
+    sun:'Sun', mon:'Mon', tue:'Tue', wed:'Wed',
+    thu:'Thu', fri:'Fri', sat:'Sat'
+  })[d] || d;
+}
+
+// If user already had a text summary (selectedRepeat), populate the Set accordingly
+function hydrateDaysFromSummary() {
+  const s = (selectedRepeat || '').toLowerCase().trim();
+  if (!s) return;
+  const map = { sunday:'sun', monday:'mon', tuesday:'tue', wednesday:'wed', thursday:'thu', friday:'fri', saturday:'sat' };
+  if (s === 'weekdays') { ['mon','tue','wed','thu','fri'].forEach(d=>selectedRepeatDays.add(d)); return; }
+  if (s === 'weekends') { ['sat','sun'].forEach(d=>selectedRepeatDays.add(d)); return; }
+  // "On Monday"
+  const m = s.match(/on\s+([a-z]+)/);
+  if (m && map[m[1]]) { selectedRepeatDays.add(map[m[1]]); return; }
+  // "Mon, Wed, Fri"
+  s.split(',').map(x=>x.trim().slice(0,3).toLowerCase()).forEach(short=>{
+    const key = ({sun:'sun', mon:'mon', tue:'tue', wed:'wed', thu:'thu', fri:'fri', sat:'sat'})[short];
+    if (key) selectedRepeatDays.add(key);
+  });
+}
+
+
 
 function daysAgoFromText(text) {
     const t = (text || '').toLowerCase().trim();
