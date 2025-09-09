@@ -34,6 +34,15 @@ const roomData = {
     living: { emoji: "🛋️", tasks: 1 }
 };
 
+// Map each room to its unique image URL
+const ROOM_IMAGES = {
+  kitchen:  'images/rooms/kitchen.jpg',
+  bedroom:  'images/rooms/bedroom.jpg',
+  bathroom: 'images/rooms/bathroom.jpg',
+  living:   'images/rooms/living.jpg',
+  // add more as needed...
+};
+
 let currentSort = 'cleanliness'; // 'cleanliness' | 'effort-asc'
 
 const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
@@ -239,93 +248,96 @@ sortRoomsGridAZ();
 
 
 function setupModalEventListeners() {
-    // One-time task modal
-    const oneTimeModal = document.getElementById('oneTimeTaskModal');
-    const oneTimeForm = document.getElementById('oneTimeTaskForm');
-    const oneTimeCloseBtn = oneTimeModal.querySelector('.close-modal');
-    
-    // Recurring task modal
-    const recurringModal = document.getElementById('recurringTaskModal');
-    const recurringForm = document.getElementById('recurringTaskForm');
-    const recurringCloseBtn = recurringModal.querySelector('.close-modal');
-    
-    // Close button events
-    oneTimeCloseBtn.addEventListener('click', () => closeOneTimeModal());
-    recurringCloseBtn.addEventListener('click', () => closeRecurringModal());
-    
-    // Close when clicking outside
-    oneTimeModal.addEventListener('click', (e) => {
-        if (e.target === oneTimeModal) {
-            closeOneTimeModal();
-        }
-    });
-    
-    recurringModal.addEventListener('click', (e) => {
-        if (e.target === recurringModal) {
-            closeRecurringModal();
-        }
-    });
-    
-    // One-time task form submission
-    oneTimeForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const selectedEffort = oneTimeModal.querySelector('.effort-option.selected')?.getAttribute('data-level') || 'low';
-        
-        const formData = {
-            room: document.getElementById('oneTimeTaskRoom').value,
-            task: document.getElementById('oneTimeTaskName').value,
-            notes: document.getElementById('oneTimeTaskNotes').value,
-            effort: selectedEffort
-        };
-        
-        console.log('One-time task saved:', formData);
-        alert('One-time task created successfully!');
-        closeOneTimeModal();
-    });
-    
-    // Recurring task form submission
-    recurringForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const formData = {
-            room: document.getElementById('recurringTaskRoom').value,
-            task: document.getElementById('recurringTaskName').value,
-            notes: document.getElementById('recurringTaskNotes').value,
-            number: selectedNumber,
-            unit: selectedUnit,
-            repeat: selectedRepeat,
-            time: selectedTime,
-            notify: document.getElementById('recurringNotifyToggle').checked
-        };
-        
-        console.log('Recurring task saved:', formData);
-        alert(`Recurring task created!\nRoom: ${formData.room}\nTask: ${formData.task}\nFrequency: Every ${formData.number} ${formData.unit}\nNotifications: ${formData.notify ? 'Enabled' : 'Disabled'}`);
-        closeRecurringModal();
-    });
-    
-    // Effort level selection for one-time modal
-    oneTimeModal.querySelectorAll('.effort-option').forEach(option => {
-        option.addEventListener('click', () => {
-            oneTimeModal.querySelectorAll('.effort-option').forEach(opt => opt.classList.remove('selected'));
-            option.classList.add('selected');
-        });
-    });
-    
-    // Repeat option click
-    const repeatRow = recurringModal.querySelector('.repeat-row');
-    if (repeatRow) {
-        repeatRow.addEventListener('click', showRepeatOptions);
-    }
-    
-    // Time option click
-    const timeRow = recurringModal.querySelector('.time-row');
-    if (timeRow) {
-        timeRow.addEventListener('click', showTimeOptions);
-    }
+  // ---- One-time "page" modal ----
+  const oneTimeModal  = document.getElementById('oneTimeTaskModal');
+  const nextBtn       = document.getElementById('oneTimeNextBtn');
+  const backChevron   = oneTimeModal.querySelector('.modal-header .back-btn');
+  const closeX        = oneTimeModal.querySelector('.modal-header .close-modal');
+  const oneTimeForm   = document.getElementById('oneTimeTaskForm');
 
-    // Initialize dual picker
-    initializeDualPicker();
+  // Next → Page 2
+  nextBtn?.addEventListener('click', () => {
+    // optional: require fields
+    // if (!oneTimeForm.reportValidity()) return;
+    gotoOneTimePage(2);
+  });
+
+  // Header back: if on page 2 → back to page 1; else close
+  backChevron?.addEventListener('click', () => {
+    if (oneTimePage > 1) gotoOneTimePage(1);
+    else closeOneTimeModal();
+  });
+
+  // X close
+  closeX?.addEventListener('click', closeOneTimeModal);
+
+  // Click outside modal-content closes
+  oneTimeModal.addEventListener('click', (e) => {
+    if (e.target === oneTimeModal) closeOneTimeModal();
+  });
+
+  // Esc key closes (only when modal is open)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOneTimeOpen()) closeOneTimeModal();
+  });
+
+  // (Optional) If you still use submit anywhere, prevent it from closing the page
+  oneTimeForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // … do nothing here in page flow …
+  });
+
+  // ---- Recurring modal close wiring (unchanged) ----
+  const recurringModal     = document.getElementById('recurringTaskModal');
+  const recurringCloseBtn  = recurringModal.querySelector('.close-modal');
+
+  recurringCloseBtn?.addEventListener('click', closeRecurringModal);
+  recurringModal.addEventListener('click', (e) => {
+    if (e.target === recurringModal) closeRecurringModal();
+  });
+
+// --- One-time modal: Effort picker (delegated + accessible) ---
+const effortGroup = oneTimeModal.querySelector('.effort-options');
+if (effortGroup) {
+  // ARIA once
+  effortGroup.setAttribute('role', 'radiogroup');
+  effortGroup.querySelectorAll('.effort-option').forEach(opt => {
+    opt.setAttribute('role', 'radio');
+    opt.setAttribute('tabindex', '0');
+    opt.setAttribute('aria-checked', opt.classList.contains('selected') ? 'true' : 'false');
+  });
+
+  function selectEffort(optionEl) {
+    effortGroup.querySelectorAll('.effort-option').forEach(opt => {
+      opt.classList.remove('selected');
+      opt.setAttribute('aria-checked', 'false');
+    });
+    optionEl.classList.add('selected');
+    optionEl.setAttribute('aria-checked', 'true');
+  }
+
+  // Click anywhere in the tile (stars/label included)
+  effortGroup.addEventListener('click', (e) => {
+    const optionEl = e.target.closest('.effort-option');
+    if (!optionEl) return;
+    selectEffort(optionEl);
+  });
+
+  // Keyboard: Enter/Space
+  effortGroup.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const optionEl = e.target.closest('.effort-option');
+    if (!optionEl) return;
+    e.preventDefault();
+    selectEffort(optionEl);
+  });
 }
+
+
+  // your existing initializeDualPicker();
+  initializeDualPicker();
+}
+
 
 function initializeDualPicker() {
     // Initialize number picker (1-30)
@@ -407,23 +419,78 @@ function initializeDualPicker() {
     }, 100);
 }
 
-function showOneTimeTaskModal() {
-    const modal = document.getElementById('oneTimeTaskModal');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+let oneTimePage = 1;
+
+function isOneTimeOpen() {
+  const modal = document.getElementById('oneTimeTaskModal');
+  return modal && getComputedStyle(modal).display !== 'none';
 }
 
-function closeOneTimeModal() {
-    const modal = document.getElementById('oneTimeTaskModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-    
-    // Reset form
-    document.getElementById('oneTimeTaskForm').reset();
-    
-    // Reset effort level selection
-    modal.querySelectorAll('.effort-option').forEach(opt => opt.classList.remove('selected'));
+function resetOneTimeForm() {
+  const modal = document.getElementById('oneTimeTaskModal');
+  if (!modal) return;
+  document.getElementById('oneTimeTaskForm')?.reset();
+  modal.querySelectorAll('.effort-option').forEach(opt => opt.classList.remove('selected'));
+  // ensure next open starts on page 1
+  gotoOneTimePage(1);
 }
+
+function gotoOneTimePage(n) {
+  oneTimePage = n;
+  const modal = document.getElementById('oneTimeTaskModal');
+  modal.querySelectorAll('.modal-page').forEach(pg => {
+    pg.classList.toggle('is-active', pg.getAttribute('data-page') === String(n));
+  });
+}
+
+function showOneTimeTaskModal() {
+  const modal = document.getElementById('oneTimeTaskModal');
+  if (!modal) return;
+  modal.classList.add('modal--page');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  gotoOneTimePage(1);
+
+  // Reset effort to NONE selected
+  const eg = modal.querySelector('.effort-options');
+  if (eg) {
+    eg.querySelectorAll('.effort-option').forEach(opt => {
+      opt.classList.remove('selected');
+      opt.setAttribute('aria-checked', 'false');
+    });
+  }
+}
+
+
+
+function closeOneTimeModal() {
+  const modal = document.getElementById('oneTimeTaskModal');
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+  resetOneTimeForm();
+}
+
+
+
+// Build a quick review for Page 2 (customize as you like)
+function buildOneTimeReview() {
+  const room  = document.getElementById('oneTimeTaskRoom').value || '—';
+  const task  = document.getElementById('oneTimeTaskName').value || '—';
+  const notes = document.getElementById('oneTimeTaskNotes').value || '—';
+  const selectedEffort = document.querySelector('#oneTimeTaskModal .effort-option.selected')?.getAttribute('data-level') || 'low';
+
+  document.getElementById('oneTimeReview').innerHTML = `
+    <div><strong>Room:</strong> ${room}</div>
+    <div><strong>Task:</strong> ${task}</div>
+    <div><strong>Effort:</strong> ${selectedEffort}</div>
+    <div><strong>Notes:</strong> ${notes ? notes.replace(/\n/g,'<br>') : '—'}</div>
+  `;
+}
+
+
+
+
 
 function showRecurringTaskModal() {
     const modal = document.getElementById('recurringTaskModal');
@@ -587,9 +654,9 @@ function daysAgoFromText(text) {
             </div>
             <div class="task-right">
               <p class="status-text">${status}</p>
-              <div class="progress-bar">
-                <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
-              </div>
+              <div class="progress-bar ${colorClass}">
+  <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
+</div>
               ${renderEffortDots(task.effort)}
             </div>
           </div>
@@ -715,16 +782,6 @@ document.addEventListener('DOMContentLoaded', () => {
     sortRoomsGridAZ();
   });
 
-function openRoomScreen(roomKey) {
-  // fill in content like before
-  titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
-  // … populate tasks …
-
-  // switch tabs
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('room-screen').classList.add('active');
-}
-
 function closeRoomScreen() {
   // go back to rooms tab
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -748,11 +805,22 @@ let roomSort = 'urgency'; // default sort for the room screen
   const dropdown   = sortBtn?.closest('.dropdown');
 
   // wire: clicking room cards opens this screen
-  document.querySelectorAll('.rooms-grid .room-card').forEach(card => {
+// ✅ ONE listener on the grid that works for all current/future cards
+(function bindRoomsGridClicks() {
+  const grid = document.querySelector('.rooms-grid');
+  if (!grid) return;
+
+  grid.addEventListener('click', (e) => {
+    const card = e.target.closest('.room-card');
+    if (!card || card.classList.contains('add-room-card')) return; // ignore the Add card
+
     const roomKey = card.getAttribute('data-room');
-    if (!roomKey) return;
-    card.addEventListener('click', () => openRoomScreen(roomKey));
+    if (roomKey && window.openRoomScreen) {
+      window.openRoomScreen(roomKey);
+    }
   });
+})();
+
 
   // back to Rooms tab
   backBtn.addEventListener('click', () => {
@@ -793,6 +861,10 @@ let roomSort = 'urgency'; // default sort for the room screen
   function openRoomScreen(roomKey) {
     screenEl.dataset.roomKey = roomKey;
     titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
+
+      // 👉 Show the unique image (or placeholder)
+
+    setRoomImage(roomKey);
 
     // switch tabs: show this screen
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -861,37 +933,69 @@ let roomSort = 'urgency'; // default sort for the room screen
       return `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
     }
     return tasks.map(t => {
-      const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+      const pct = Math.max(0, Math.min(100, Number(computeProgressPercent(t.lastCleaned, t.frequency) || 0)));
       const colorClass = progressColorClass(pct);
-      const status = (
+      const status =
         pct <= 10 ? 'Overdue!' :
         pct <= 33 ? 'Uh oh...' :
         pct <= 66 ? 'Getting dusty...' :
-        'Looking good!'
-      );
+        'Looking good!';
+  
       return `
-  <div class="room-task-card">
-    <div class="task-top">
-      <div class="task-left">
-        <p class="room-task-name">${t.name}</p>
-        <p class="task-last">${t.lastCleaned || ''}</p>
-      </div>
-      <div class="task-right">
-        <p class="status-text">${status}</p>
-        <div class="progress-bar">
-          <div class="progress-fill ${colorClass}" style="width:${pct}%;"></div>
+    <div class="room-task-card">
+      <div class="task-top">
+        <div class="task-left">
+          <p class="room-task-name">${t.name}</p>
+          <p class="task-last">${t.lastCleaned || ''}</p>
         </div>
-        ${renderEffortDots(t.effort)}
-      </div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
-      <span>${t.frequency || ''}</span>
-      <span>${(t._day || '').toUpperCase()}</span>
-    </div>
+        <div class="task-right">
+          <p class="status-text">${status}</p>
+          <div class="progress-bar ${colorClass}">
+    <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
   </div>
-`;
+          ${renderEffortDots(t.effort)}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
+        <span>${t.frequency || ''}</span>
+        <span>${(t._day || '').toUpperCase()}</span>
+      </div>
+    </div>`;
     }).join('');
   }
   
+  
 })();
+
+function setRoomImage(roomKey) {
+  const slot = document.getElementById('roomImageSlot');
+  if (!slot) return;
+
+  const src = ROOM_IMAGES[roomKey];
+  const emoji = roomData?.[roomKey]?.emoji || '🏠';
+
+  // Clear old content
+  slot.innerHTML = '';
+
+  if (!src) {
+    // Fallback to emoji placeholder
+    slot.innerHTML = `<div class="room-image-placeholder">${emoji}</div>`;
+    return;
+  }
+
+  const img = new Image();
+  img.alt = `${roomKey} image`;
+  img.onload = () => {
+    slot.innerHTML = '';
+    slot.appendChild(img);
+  };
+  img.onerror = () => {
+    slot.innerHTML = `<div class="room-image-placeholder">${emoji}</div>`;
+  };
+  img.src = src;
+}
+
+// const imageUrl = (prompt('Optional: Enter an image URL for this room') || '').trim();
+// if (imageUrl) {
+//   ROOM_IMAGES[key] = imageUrl;
+// }

@@ -231,19 +231,23 @@
     margin-right: 5px;
 }
 
-.progress-bar {
-    flex: 1;
-    height: 6px;
-    background: #f0f0f0;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 0.3s;
-}
+/* === Progress bar track (make sure this is LAST) === */
+.task-right .progress-bar { 
+    /* remove neutral background that was overriding colored tracks */
+    background: transparent; 
+    flex: 0 0 auto; /* keep from stretching */
+  }
+  
+  /* Track colors (lighter shades) — higher specificity than .task-right .progress-bar */
+  .task-right .progress-bar.progress-red    { background: #fdecea; }  /* light red */
+  .task-right .progress-bar.progress-yellow { background: #fff8e1; }  /* light yellow */
+  .task-right .progress-bar.progress-green  { background: #e8f5e9; }  /* light green */
+  
+  /* Fill colors (solid) */
+  .progress-fill.progress-red    { background:#f44336; }
+  .progress-fill.progress-yellow { background:#ff9800; }
+  .progress-fill.progress-green  { background:#4caf50; }
+  
 
 /* .progress-red {
     background: #f44336;
@@ -261,9 +265,6 @@
 } */
 
 /* Color-only progress classes (no width here) */
-.progress-red    { background:#f44336; }
-.progress-yellow { background:#ff9800; }
-.progress-green  { background:#4caf50; }
 
 .status-text {
     font-size: 11px;
@@ -349,7 +350,7 @@
 /* Reserve space for the absolute bottom nav so content isn't covered */
 .tab-content,
 #room-screen {
-  padding-bottom: 70px;    /* nav is 60px tall; give it some breathing room */
+  padding-bottom: calc(var(--nav-h) + 10px);
 }
 
 /* Active panel consumes remaining height in the frame */
@@ -1034,11 +1035,12 @@ textarea::placeholder {
 /* New wrapper that *pushes* the group to the bottom */
 /* pushes the block down */
 .room-tasks-block {
-    margin-top: auto;       /* 👈 KEY: sits at bottom */
+    /* margin-top: auto;  🚫 remove this line */
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 0;          /* needed so the scroller below can shrink */
+    min-height: 0; /* keep for proper scroll behavior */
+    padding: 0 16px; /* optional: add horizontal padding */
   }
   
   /* Progress card */
@@ -1047,7 +1049,7 @@ textarea::placeholder {
     border-radius: 12px;
     padding: 12px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    margin-bottom: 12px;
+    margin: 0 0 12px; 
   }
   .room-progress-top {
     display: flex;
@@ -1186,11 +1188,13 @@ textarea::placeholder {
 .task-right .progress-bar {
     width: 120px;
     height: 8px;
-    background: #f0f0f0;
+    background: transparent; /* no neutral bg, we use colored tracks */
     border-radius: 4px;
     overflow: hidden;
-    flex: 0 0 auto;  /* <— prevent flex:1 from the global rule */
+    flex: 0 0 auto;  
   }
+
+  
   
   /* Keep fills as-is (colors already defined) */
   .task-right .progress-fill{
@@ -1219,3 +1223,191 @@ textarea::placeholder {
   .task-right .effort-dot.filled {
     background: #333;
   }
+
+  /* --- Progress bar: unify + make light tracks apply everywhere --- */
+
+/* 1) Base bar sizing only (no background here) */
+.progress-bar {
+    width: 120px;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 0 0 auto;
+    background: transparent; /* neutral; colors come from variants below */
+  }
+  
+  /* 2) Light track colors (apply globally, not just inside .task-right) */
+  .progress-bar.progress-red    { background: #fdecea; }  /* light red   */
+  .progress-bar.progress-yellow { background: #fff8e1; }  /* light yellow*/
+  .progress-bar.progress-green  { background: #e8f5e9; }  /* light green */
+  
+  /* 3) Solid fill colors */
+  .progress-fill { 
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+  }
+  .progress-fill.progress-red    { background:#f44336; }
+  .progress-fill.progress-yellow { background:#ff9800; }
+  .progress-fill.progress-green  { background:#4caf50; }
+  
+  /* 4) (IMPORTANT) Remove generic strong-color classes on *any element*.
+     Either delete these three lines wherever they appear, or override them here: */
+  /* .progress-red,
+  .progress-yellow,
+  .progress-green { background: initial !important; }
+   */
+
+   .room-image-slot {
+    flex: 0 0 auto;         /* 👈 prevents flex children from stretching/shrinking */
+    height: 160px;          /* 👈 fixed height, stays the same always */
+    margin: 12px -16px 12px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+
+  .room-image-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+
+  .room-image-placeholder {
+    font-size: 64px;
+    line-height: 1;
+    opacity: 0.8;
+  }
+
+  .room-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    margin-top: 0;
+  }
+  
+  .room-header-row h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+
+ /* Page-style modal that lives INSIDE the iPhone frame */
+ #iphone-16-pro .modal.modal--page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: var(--nav-h, 60px);  /* <-- key: stops above nav */
+    z-index: 1100;         /* under nav (1200) */
+    background: transparent;
+    display: none;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  
+  /* Edge-to-edge page content */
+  #iphone-16-pro .modal.modal--page .modal-content {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* header/footer fixed; body scrolls */
+    background: #fff;
+  }
+  
+  /* Sticky header */
+  #iphone-16-pro .modal.modal--page .modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+  }
+  
+  #iphone-16-pro .modal.modal--page .modal-header h2 {
+    position: static; transform: none;
+    margin: 0 auto; font-size: 18px; font-weight: 700;
+  }
+  
+  #iphone-16-pro .modal.modal--page .modal-header .back-btn { display: block; font-size: 22px; }
+  #iphone-16-pro .modal.modal--page .modal-header .close-modal { font-size: 22px; }
+  
+  /* Scrollable form body */
+  #iphone-16-pro .modal.modal--page form {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  
+  /* Page-like spacing */
+  #iphone-16-pro .modal.modal--page .form-group { padding: 0 20px; margin: 18px 0; }
+  #iphone-16-pro .modal.modal--page .dropdown-select,
+  #iphone-16-pro .modal.modal--page textarea {
+    font-size: 16px; padding: 14px 16px; border-radius: 12px;
+  }
+  
+  /* Section styling */
+  #iphone-16-pro .modal.modal--page .effort-level-group {
+    margin: 8px 0 16px; padding: 16px 20px;
+    background: #fafafa; border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;
+  }
+  
+  /* Sticky bottom action (above nav) */
+  #iphone-16-pro .modal.modal--page .form-actions {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+    background: #fff;
+    border-top: 1px solid #eee;
+  }
+  
+  #iphone-16-pro .modal.modal--page .btn-save {
+    width: 100%; border-radius: 12px; padding: 14px 18px; font-size: 16px;
+  }
+  
+  /* Multi-page body layout */
+#oneTimeTaskModal .modal-page {
+    display: none;
+    height: 100%;
+    flex-direction: column;
+  }
+  
+  #oneTimeTaskModal .modal-page.is-active {
+    display: flex;
+  }
+  
+  /* Scrollable inner body area on each page */
+  #oneTimeTaskModal .modal-page-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Two buttons side by side on Page 2 footer */
+  #oneTimeTaskModal .modal-page[data-page="2"] .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .tab-content, #room-screen {
+    padding-bottom: calc(var(--nav-h, 60px) + 10px);
+  }
+  
+  .modal { pointer-events: none; }
+  .modal[style*="display: flex"] { pointer-events: auto; }

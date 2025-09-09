@@ -75,9 +75,9 @@
                         </div>
                         <div class="task-info">
                             <p>cleaned 3 weeks ago</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill progress-red"></div>
-                            </div>
+                            <div class="progress-bar progress-yellow">
+                                <div class="progress-fill progress-yellow" style="width:70%"></div>
+                              </div>
                             <p class="status-text">Uh oh...</p>
                         </div>
                         <div class="task-frequency">
@@ -91,9 +91,9 @@
                         </div>
                         <div class="task-info">
                             <p>cleaned 3 weeks ago</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill progress-yellow"></div>
-                            </div>
+                            <div class="progress-bar progress-red">
+                                <div class="progress-fill progress-red" style="width:45%"></div>
+                              </div>
                             <p class="status-text">Getting dusty...</p>
                         </div>
                         <div class="task-frequency">
@@ -110,9 +110,9 @@
                         </div>
                         <div class="task-info">
                             <p>cleaned 2 days ago</p>
-                            <div class="progress-bar">
-                                <div class="progress-fill progress-green"></div>
-                            </div>
+                            <div class="progress-bar progress-green">
+                                <div class="progress-fill progress-green" style="width:20%"></div>
+                              </div>
                             <p class="status-text">Looking good!</p>
                         </div>
                         <div class="task-frequency">
@@ -217,15 +217,18 @@
 <div class="tab-content" id="room-screen">
     <div class="screen-header">
       <button id="roomScreenBack" class="back-btn">‹</button>
-      <h2 id="roomScreenTitle">Room</h2>
+
       <span style="width:24px;"></span>
     </div>
   
     <div id="roomScreenBody" class="room-screen-body">
-        <div class="room-spacer" aria-hidden="true"></div>  <!-- NEW -->
+        
         
       <div class="room-tasks-block">
-          <!-- 1) Progress status -->
+        
+        <div class="room-image-slot" id="roomImageSlot"></div>
+
+                  <!-- 1) Progress status -->
         <div class="room-progress">
           <div class="room-progress-top">
             <span id="roomProgressLabel">Overall status</span>
@@ -235,17 +238,24 @@
             <div id="roomProgressFill" class="progress-fill progress-green" style="width:0%;"></div>
           </div>
         </div>
-    
-        <!-- 2) Sort by -->
-        <div class="room-sort">
-          <div class="dropdown">
-            <button class="sort-btn" id="roomSortBtn">Sort by ⌄</button>
-            <div class="dropdown-menu">
+
+        <div class="room-header-row">
+            <h2 id="roomScreenTitle">Room</h2>
+            <div class="dropdown">
+              <button class="sort-btn" id="roomSortBtn">Sort by ⌄</button>
+              <!-- give the menu an id so your JS finds it -->
+              <div class="dropdown-menu" id="roomSortMenu">
                 <div data-sort="cleanliness">Cleanliness</div>
                 <div data-sort="effort-asc">Effort</div>
               </div>
+            </div>
           </div>
-        </div>
+
+          
+
+
+    
+
     
         <!-- 3) Tasks list -->
         <div id="roomScreenTasks" class="room-screen-tasks"></div>
@@ -268,77 +278,93 @@
         </div>
 
         <!-- One-time Task Modal -->
-        <div id="oneTimeTaskModal" class="modal">
+        <div id="oneTimeTaskModal" class="modal modal--page">
             <div class="modal-content">
-                <div class="modal-header">
-                    <button class="back-btn" style="display: none;">‹</button>
-                    <h2>Add Task</h2>
-                    <span class="close-modal">×</span>
-                </div>
-                <form id="oneTimeTaskForm">
-                    <div class="form-group">
-                        <select id="oneTimeTaskRoom" class="dropdown-select" required>
-                            <option value="">Choose Room</option>
-                            <option value="bedroom">Bedroom</option>
-                            <option value="kitchen">Kitchen</option>
-                            <option value="bathroom">Bathroom</option>
-                            <option value="living">Living Room</option>
-                        </select>
+              <div class="modal-header">
+                <button class="back-btn">‹</button>
+                <h2>Add Task</h2>
+                <span class="close-modal">×</span>
+              </div>
+          
+              <!-- PAGE 1 (your existing form) -->
+              <div class="modal-page is-active" data-page="1">
+                <form id="oneTimeTaskForm" class="modal-page-body">
+                  <!-- ✨ keep your existing fields exactly as-is -->
+                  <div class="form-group">
+                    <select id="oneTimeTaskRoom" class="dropdown-select" required>
+                      <option value="">Choose Room</option>
+                      <option value="bedroom">Bedroom</option>
+                      <option value="kitchen">Kitchen</option>
+                      <option value="bathroom">Bathroom</option>
+                      <option value="living">Living Room</option>
+                    </select>
+                  </div>
+          
+                  <div class="form-group">
+                    <select id="oneTimeTaskName" class="dropdown-select" required>
+                      <option value="">Select Task</option>
+                      <option value="vacuum">Vacuum Floor</option>
+                      <option value="dust">Dust Surfaces</option>
+                      <option value="organize">Organize Space</option>
+                      <option value="clean">General Cleaning</option>
+                      <option value="wash">Wash/Wipe Down</option>
+                      <option value="custom">Custom Task...</option>
+                    </select>
+                  </div>
+          
+                  <div class="form-group">
+                    <label for="oneTimeTaskNotes">Notes</label>
+                    <textarea id="oneTimeTaskNotes" placeholder="Jot down specifics, reminders, etc..." rows="4"></textarea>
+                  </div>
+          
+                  <div class="effort-level-group">
+                    <h3>What is this task's effort level?</h3>
+                    <div class="effort-options">
+                      <div class="effort-option" data-level="low">
+                        <div class="stars"><span class="star active">★</span><span class="star">★</span><span class="star">★</span></div>
+                        <span class="effort-label">Low</span>
+                      </div>
+                      <div class="effort-option" data-level="moderate">
+                        <div class="stars"><span class="star active">★</span><span class="star active">★</span><span class="star">★</span></div>
+                        <span class="effort-label">Moderate</span>
+                      </div>
+                      <div class="effort-option" data-level="high">
+                        <div class="stars"><span class="star active">★</span><span class="star active">★</span><span class="star active">★</span></div>
+                        <span class="effort-label">High</span>
+                      </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <select id="oneTimeTaskName" class="dropdown-select" required>
-                            <option value="">Select Task</option>
-                            <option value="vacuum">Vacuum Floor</option>
-                            <option value="dust">Dust Surfaces</option>
-                            <option value="organize">Organize Space</option>
-                            <option value="clean">General Cleaning</option>
-                            <option value="wash">Wash/Wipe Down</option>
-                            <option value="custom">Custom Task...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="oneTimeTaskNotes">Notes</label>
-                        <textarea id="oneTimeTaskNotes" placeholder="Jot down specifics, reminders, etc..." rows="4"></textarea>
-                    </div>
-                    
-                    <div class="effort-level-group">
-                        <h3>What is this task's effort level?</h3>
-                        <div class="effort-options">
-                            <div class="effort-option" data-level="low">
-                                <div class="stars">
-                                    <span class="star active">★</span>
-                                    <span class="star">★</span>
-                                    <span class="star">★</span>
-                                </div>
-                                <span class="effort-label">Low</span>
-                            </div>
-                            <div class="effort-option" data-level="moderate">
-                                <div class="stars">
-                                    <span class="star active">★</span>
-                                    <span class="star active">★</span>
-                                    <span class="star">★</span>
-                                </div>
-                                <span class="effort-label">Moderate</span>
-                            </div>
-                            <div class="effort-option" data-level="high">
-                                <div class="stars">
-                                    <span class="star active">★</span>
-                                    <span class="star active">★</span>
-                                    <span class="star active">★</span>
-                                </div>
-                                <span class="effort-label">High</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">Save</button>
-                    </div>
+                  </div>
+          
+                  <!-- Sticky footer for Page 1 -->
+                  <div class="form-actions">
+                    <button type="button" id="oneTimeNextBtn" class="btn-save">Next</button>
+                  </div>
                 </form>
+              </div>
+          
+              <!-- PAGE 2 (example: quick review / confirm / extra options) -->
+              <div class="modal-page" data-page="2">
+                <div class="modal-page-body">
+                  <!-- intentionally blank -->
+                </div>
+              </div>
+              </div>
             </div>
-        </div>
+            <nav>
+                <a href="../index.html">
+                    <img src="../nav-img/home.png" alt="Home" style="width:24px;height:24px;">
+                </a>
+                <a href="../tasks/tasks.html">
+                    <img src="../nav-img/assignment_add.png" alt="Tasks" style="width:24px;height:24px;">
+                </a>
+                <a href="../schedule/schedule.html">
+                    <img src="../nav-img/calendar_month.png" alt="Schedule" style="width:24px;height:24px;">
+                </a>
+                <a href="../notif/notif.html">
+                    <img src="../nav-img/notifications.png" alt="Notifications" style="width:24px;height:24px;">
+                </a>
+            </nav>
+          </div>
 
         <!-- Recurring Task Modal -->
         <div id="recurringTaskModal" class="modal">
@@ -436,22 +462,10 @@
                     </div>
                 </form>
             </div>
+            
         </div>
 
-        <nav>
-            <a href="../index.html">
-                <img src="../nav-img/home.png" alt="Home" style="width:24px;height:24px;">
-            </a>
-            <a href="../tasks/tasks.html">
-                <img src="../nav-img/assignment_add.png" alt="Tasks" style="width:24px;height:24px;">
-            </a>
-            <a href="../schedule/schedule.html">
-                <img src="../nav-img/calendar_month.png" alt="Schedule" style="width:24px;height:24px;">
-            </a>
-            <a href="../notif/notif.html">
-                <img src="../nav-img/notifications.png" alt="Notifications" style="width:24px;height:24px;">
-            </a>
-        </nav>
+        
 
   
   
