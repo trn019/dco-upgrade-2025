@@ -345,9 +345,53 @@
               <!-- PAGE 2 (example: quick review / confirm / extra options) -->
               <div class="modal-page" data-page="2">
                 <div class="modal-page-body">
-                  <!-- intentionally blank -->
+              
+                  <!-- Do Date -->
+                  <section class="card-section">
+                    <h3 class="section-title">Do Date:</h3>
+                    <div class="date-grid">
+                      <select id="oneTimeDoMonth" class="dropdown-select" aria-label="Month"></select>
+                      <select id="oneTimeDoDay" class="dropdown-select" aria-label="Day"></select>
+                      <select id="oneTimeDoYear" class="dropdown-select" aria-label="Year"></select>
+                    </div>
+                  </section>
+              
+                  <!-- Select Time -->
+                  <section class="card-section">
+                    <h3 class="section-title">Select Time</h3>
+              
+                    <div class="row row-check">
+                        <label for="oneTimeAllDay" class="check-label">All Day</label>
+                        <input type="checkbox" id="oneTimeAllDay" />
+                      </div>
+              
+                    <div class="row">
+                      <input id="oneTimeFreeBlock" class="text-input" type="text"
+                             placeholder="(Optional) Select a free block" disabled />
+                    </div>
+              
+                    <button type="button" class="row row-nav" id="oneTimeStartRow" aria-label="Pick start time">
+                      <span>Start</span>
+                      <span class="row-value" id="oneTimeStartVal">10AM</span>
+                    </button>
+              
+                    <button type="button" class="row row-nav" id="oneTimeEndRow" aria-label="Pick end time">
+                      <span>End</span>
+                      <span class="row-value" id="oneTimeEndVal">1PM</span>
+                    </button>
+                  </section>
+              
+                </div>
+              
+                <!-- Page 2 footer (Back | Save) -->
+                <div class="form-actions">
+                  <button type="button" id="oneTimePrevBtn" class="btn-save" style="background:#e0e0e0;color:#333;">
+                    Back
+                  </button>
+                  <button type="button" id="oneTimeCreateBtn" class="btn-save">Save</button>
                 </div>
               </div>
+              
               </div>
             </div>
             <nav>

@@ -1411,3 +1411,92 @@ textarea::placeholder {
   
   .modal { pointer-events: none; }
   .modal[style*="display: flex"] { pointer-events: auto; }
+
+  /* ===== Page 2 styles ===== */
+.card-section {
+    background: #f5fbff;            /* subtle card bg like mock */
+    border: 1px solid #e6edf2;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 20px;
+  }
+  
+  .section-title {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0c4a7a;                  /* deep blue header */
+  }
+  
+  .date-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;  /* Month wider */
+    gap: 10px;
+  }
+  
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e0e6ea;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  
+  .row-check {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+  
+  .row-nav {
+    cursor: pointer;
+  }
+  
+  .row-nav .row-value::after {
+    content: "›";
+    margin-left: 8px;
+    opacity: 0.6;
+  }
+  
+  .text-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font: inherit;
+    color: #555;
+    background: transparent;
+  }
+  
+  .text-input:disabled {
+    color: #bbb;
+  }
+  
+  .row.disabled,
+  .row.disabled .row-value {
+    color: #bbb;
+    pointer-events: none;
+    filter: grayscale(0.2);
+  }
+  
+  /* Keep Page 2 footer as two buttons side-by-side (you already have a rule, this reiterates) */
+  #oneTimeTaskModal .modal-page[data-page="2"] .form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .check-label { cursor: pointer; }
+  
+  #room-screen #roomProgressLabel,
+#room-screen #roomProgressPct {
+  display: none !important;
+}
+
+/* Room screen: remove the now-empty header row above the bar */
+
+#room-screen .room-progress .progress-bar {
+    width: 100% !important;  /* take up the whole card width */
+    max-width: none;
+  }

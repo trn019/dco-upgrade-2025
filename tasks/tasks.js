@@ -875,26 +875,30 @@ let roomSort = 'urgency'; // default sort for the room screen
 
   function renderRoomScreen(roomKey) {
     const tasksForRoom = collectRoomTasks(roomKey);
-
-    // compute overall progress = average remaining% across tasks
+  
+    // average remaining% across tasks
     const pctArray = tasksForRoom.map(t => computeProgressPercent(t.lastCleaned, t.frequency));
     const avg = pctArray.length ? Math.round(pctArray.reduce((a,b)=>a+b,0)/pctArray.length) : 0;
-    const colorClass = progressColorClass(avg);
-
-    // fill progress UI
+    const colorClass = progressColorClass(avg); // 'progress-green' | 'progress-yellow' | 'progress-red'
+  
+    // fill progress UI (bar + fill use the same color class)
+    const barEl = progFill.parentElement; // .progress-bar
+    barEl.classList.remove('progress-green','progress-yellow','progress-red');
+    barEl.classList.add(colorClass);
+  
     progFill.classList.remove('progress-green','progress-yellow','progress-red');
     progFill.classList.add(colorClass);
     progFill.style.width = `${avg}%`;
-    progPctEl.textContent = `${avg}%`;
-    progLabel.textContent = avg <= 10 ? 'Overdue'
-                          : avg <= 33 ? 'Needs attention'
-                          : avg <= 66 ? 'Getting dusty'
-                          : 'Looking good';
-
+  
+    // hide/remove the text above the bar
+    progPctEl.textContent = '';
+    progLabel.textContent = '';
+  
     // sort + render list
     const sorted = sortTasks(tasksForRoom, roomSort);
     listEl.innerHTML = renderTasks(sorted);
   }
+  
 
   function collectRoomTasks(roomKey) {
     const tasks = [];
@@ -999,3 +1003,135 @@ function setRoomImage(roomKey) {
 // if (imageUrl) {
 //   ROOM_IMAGES[key] = imageUrl;
 // }
+
+// ===== One-time Page 2 state =====
+let oneTimePage2Built = false;
+let oneTimeStartTime = '10AM';
+let oneTimeEndTime   = '1PM';
+
+function buildOneTimePage2Once() {
+  if (oneTimePage2Built) return;
+  oneTimePage2Built = true;
+
+  const monthSel = document.getElementById('oneTimeDoMonth');
+  const daySel   = document.getElementById('oneTimeDoDay');
+  const yearSel  = document.getElementById('oneTimeDoYear');
+
+  // Populate months
+  const months = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ];
+  months.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = m;
+    monthSel.appendChild(opt);
+  });
+
+  // Years (current → +3)
+  const now = new Date();
+  const yStart = now.getFullYear();
+  for (let y = yStart; y <= yStart + 3; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearSel.appendChild(opt);
+  }
+
+  // Days (depends on month/year)
+  function daysInMonth(y, mIndex1) {
+    return new Date(y, mIndex1, 0).getDate(); // mIndex1 is 1-based
+  }
+  function fillDays() {
+    const y = parseInt(yearSel.value || yStart, 10);
+    const m = parseInt(monthSel.value || (now.getMonth()+1), 10);
+    const n = daysInMonth(y, m);
+    const prev = parseInt(daySel.value || 1, 10);
+
+    daySel.innerHTML = '';
+    for (let d = 1; d <= n; d++) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = String(d).padStart(2, '0');
+      daySel.appendChild(opt);
+    }
+    daySel.value = Math.min(prev, n);
+  }
+
+  // Defaults = today
+  monthSel.value = (now.getMonth() + 1);
+  yearSel.value  = now.getFullYear();
+  fillDays();
+  daySel.value = now.getDate();
+
+  monthSel.addEventListener('change', fillDays);
+  yearSel.addEventListener('change', fillDays);
+
+  // All Day toggle wiring
+  const allDay     = document.getElementById('oneTimeAllDay');
+  const freeBlock  = document.getElementById('oneTimeFreeBlock');
+  const startRow   = document.getElementById('oneTimeStartRow');
+  const endRow     = document.getElementById('oneTimeEndRow');
+
+  function updateTimeDisabledUI(disabled) {
+    freeBlock.disabled = disabled;
+    startRow.classList.toggle('disabled', disabled);
+    endRow.classList.toggle('disabled', disabled);
+  }
+  allDay.addEventListener('change', () => updateTimeDisabledUI(allDay.checked));
+  updateTimeDisabledUI(false); // initial
+
+  // Simple time prompt pickers (swap later for a real picker if you want)
+  function pickTime(initial) {
+    const v = prompt('Enter time (e.g., 9:00 AM, 2:30 PM):', initial);
+    return (v && v.trim()) ? v.trim().toUpperCase() : initial;
+  }
+
+  const startVal = document.getElementById('oneTimeStartVal');
+  const endVal   = document.getElementById('oneTimeEndVal');
+
+  startRow.addEventListener('click', () => {
+    oneTimeStartTime = pickTime(oneTimeStartTime);
+    startVal.textContent = oneTimeStartTime;
+  });
+
+  endRow.addEventListener('click', () => {
+    oneTimeEndTime = pickTime(oneTimeEndTime);
+    endVal.textContent = oneTimeEndTime;
+  });
+
+  // Footer buttons
+  document.getElementById('oneTimePrevBtn')?.addEventListener('click', () => gotoOneTimePage(1));
+  document.getElementById('oneTimeCreateBtn')?.addEventListener('click', () => {
+    // Collect all Page 1 + Page 2 data (minimal example)
+    const selectedEffort = document.querySelector('#oneTimeTaskModal .effort-option.selected')?.getAttribute('data-level') || 'low';
+    const data = {
+      room:  document.getElementById('oneTimeTaskRoom').value,
+      task:  document.getElementById('oneTimeTaskName').value,
+      notes: document.getElementById('oneTimeTaskNotes').value,
+      effort: selectedEffort,
+      date: {
+        year:  parseInt(yearSel.value, 10),
+        month: parseInt(monthSel.value, 10),
+        day:   parseInt(daySel.value, 10),
+      },
+      time: {
+        allDay: document.getElementById('oneTimeAllDay').checked,
+        freeBlock: document.getElementById('oneTimeFreeBlock').value.trim(),
+        start: oneTimeStartTime,
+        end:   oneTimeEndTime
+      }
+    };
+    console.log('Create one-time task:', data);
+    alert('One-time task created!');
+    closeOneTimeModal();
+  });
+}
+
+// Hook into your existing pager so Page 2 builds when first shown
+const _origGoto = gotoOneTimePage;
+gotoOneTimePage = function(n) {
+  _origGoto(n);
+  if (n === 2) buildOneTimePage2Once();
+};
