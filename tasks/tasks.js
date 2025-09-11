@@ -1868,21 +1868,6 @@ function asStopTimer(hard){
   if (hard) { AS.remaining = AS.timerSecs; AS.paused = false; }
 }
 
-function asTickRender() {
-  const title = document.getElementById('asRunningTask');
-  const cd    = document.getElementById('asCountdown');
-
-  if (title) {
-    if (AS.mode === 'break') {
-      title.textContent = 'Break';
-    } else if (AS.currentTask) {
-      title.textContent = `${AS.currentTask.task.name} — ${AS.currentTask.roomName}`;
-    } else {
-      title.textContent = 'Task';
-    }
-  }
-  if (cd) cd.textContent = asFormat(AS.remaining);
-}
 
 
 // ----- Overdue rescheduler -----
@@ -2130,7 +2115,18 @@ const updateTimeBeginLabel = () => {
     asRenderStart();
     asGoto('start');
   });
-  document.getElementById('asCloseToTasksBtn')?.addEventListener('click', asClose);
+
+  const celebrate = () => {
+    AS.currentTask = asPickLowEffort();
+    asRenderStart();
+    asGoto('start');
+  };
+  
+  document.getElementById('asCelebrateBtn')?.addEventListener('click', celebrate);
+  
+  // (Optional safety if any old markup still has asAnotherBtn)
+  document.getElementById('asAnotherBtn')?.addEventListener('click', celebrate);
+  
 
   // Rescheduler page
   document.getElementById('asReschedDone')?.addEventListener('click', ()=>{
@@ -2165,7 +2161,11 @@ function asStartTimer(totalSecs, mode = 'work', resumeRemaining = null) {
 
   // Initialize ring with the correct total for this mode
   const totalForRing = (mode === 'break') ? AS.breakLengthSecs : (AS.timerSecs || AS.workRemaining);
-  requestAnimationFrame(() => asRingInit(totalForRing));
+requestAnimationFrame(() => {
+  asRingInit(totalForRing);
+  bindPauseBtn();
+  updatePauseBtnUI();        // ensure icon matches current pause state (running by default)
+});
 
   asTickRender();  // paints the initial label & ring
 
@@ -2287,6 +2287,7 @@ function asTickRender() {
 
 
 
+
 (function wireBreakButton() {
   const old = document.getElementById('asBreakBtn');
   if (!old) return;
@@ -2325,6 +2326,27 @@ document.getElementById('asResetBtn')?.addEventListener('click', () => {
 });
 
 // === Progress ring helpers ===
+
+
+function updatePauseBtnUI() {
+  const btn = document.getElementById('asPauseBtn');
+  if (!btn) return;
+  btn.classList.toggle('is-paused', !!AS.paused);
+  btn.setAttribute('aria-pressed', AS.paused ? 'true' : 'false');
+  btn.setAttribute('aria-label', AS.paused ? 'Resume' : 'Pause');
+}
+
+function bindPauseBtn() {
+  const old = document.getElementById('asPauseBtn');
+  if (!old) return;
+  const fresh = old.cloneNode(true);         // nuke any old listeners
+  old.replaceWith(fresh);
+  fresh.addEventListener('click', () => {
+    AS.paused = !AS.paused;                  // toggle pause state
+    updatePauseBtnUI();
+  });
+}
+
 const RING = { fg: null, c: 0, total: 1 };
 
 function asRingInit(totalSecs) {
@@ -2333,20 +2355,14 @@ function asRingInit(totalSecs) {
   const r = parseFloat(fg.getAttribute('r')) || 54;
   const c = 2 * Math.PI * r;
   fg.style.strokeDasharray = `${c} ${c}`;
-  RING.fg = fg;
-  RING.c = c;
-  RING.total = Math.max(1, totalSecs || 1);
-  // start at full circle (remaining == total)
+  RING.fg = fg; RING.c = c; RING.total = Math.max(1, totalSecs || 1);
   asRingUpdate(AS.remaining ?? RING.total, RING.total, AS.mode);
 }
-
 function asRingUpdate(remaining, totalSecs, mode) {
   if (!RING.fg || !RING.c) return;
   const total = Math.max(1, totalSecs || RING.total);
-  const frac = Math.max(0, Math.min(1, remaining / total));   // 1.0 = full, 0.0 = empty
-  const offset = RING.c * (1 - frac);
-  RING.fg.style.strokeDashoffset = `${offset}`;
-
-  // color by mode
+  const frac = Math.max(0, Math.min(1, remaining / total));
+  RING.fg.style.strokeDashoffset = `${RING.c * (1 - frac)}`;
   RING.fg.style.stroke = (mode === 'break') ? '#4db6ac' : '#1976d2';
 }
+

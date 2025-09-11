@@ -664,25 +664,34 @@
     <div class="modal-page-body">
       <!-- <h3 id="asRunningTask">Task name</h3> -->
       <!-- Big circular timer -->
-<div class="timer-ring" aria-label="Time remaining">
+<!-- Circular timer with center Pause/Resume -->
+<div class="timer-ring">
     <svg viewBox="0 0 120 120" class="ring-svg">
-      <!-- background track -->
       <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
-      <!-- foreground progress (we animate its dash offset) -->
       <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
     </svg>
-    <div id="asCountdown" class="ring-label">30:00</div>
+  
+    <!-- center pause -->
+    <button id="asPauseBtn" class="ring-center-btn" aria-pressed="false" aria-label="Pause">
+      <svg class="icon icon-pause" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="5" y="4" width="5" height="16" rx="2"></rect>
+        <rect x="14" y="4" width="5" height="16" rx="2"></rect>
+      </svg>
+      <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8 5v14l11-7z"></path>
+      </svg>
+    </button>
   </div>
   
+  <!-- ⬇️ this is what asTickRender() updates -->
+  <div id="asCountdown" class="countdown-below">30:00</div>
   
-      <!-- Take a break under the timer -->
-      <button id="asBreakBtn" class="timer-break-btn">Take a break</button>
+  <button id="asBreakBtn" class="timer-break-btn">Take a break?</button>
   
-      <div class="as-timer-controls">
-        <!-- (Optional) Reset can be commented out -->
-        <!-- <button id="asResetBtn" class="btn-plain">Reset</button> -->
-        <button id="asFinishBtn" class="btn-primary">I finished!</button>
-      </div>
+  <div class="as-timer-controls">
+    <button id="asFinishBtn" class="btn-primary">I finished!</button>
+  </div>
+  
     </div>
   </div>
   
@@ -694,12 +703,12 @@
         <div class="modal-page-body" style="text-align:center;">
           <h2>Nice work! 🎉</h2>
           <p>Want another quick win?</p>
-          <div class="form-actions" style="justify-content:center;">
-            <button id="asAnotherBtn" class="btn-save">Give me another</button>
-            <button id="asCloseToTasksBtn" class="btn-save" style="background:#fff;color:#333;border:1px solid #ddd;">Back to tasks</button>
+          <div class="form-actions">
+            <button id="asCelebrateBtn" class="btn-primary">Celebrate!</button>
           </div>
         </div>
       </div>
+      
   
       <!-- PAGE: Overdue Rescheduler -->
       <div class="modal-page" data-page="resched">

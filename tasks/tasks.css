@@ -2225,10 +2225,14 @@ textarea::placeholder {
     font-size: 24px; margin: 0 0 6px; color: #0b3d5c;
   }
   #autoSanitizeModal [data-page="done"] p { margin: 0 0 18px; color:#555; }
-  #autoSanitizeModal [data-page="done"] .form-actions {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    width: calc(100% - 40px); margin: 0 20px 10px;
+/* Done page: single centered button */
+#autoSanitizeModal [data-page="done"] .form-actions {
+    display: flex !important;
+    justify-content: center;
+    width: calc(100% - 40px);
+    margin: 0 20px 10px;
   }
+  
   #autoSanitizeModal #asAnotherBtn { background:#1976d2; color:#fff; border:none; border-radius:12px; padding:14px 16px; font-weight:700; }
   #autoSanitizeModal #asCloseToTasksBtn { background:#fff; color:#333; border:1px solid #e0e0e0; border-radius:12px; padding:14px 16px; }
   
@@ -2438,36 +2442,31 @@ textarea::placeholder {
   #autoSanitizeModal .as-timer-controls { margin-top: 8px; }
   
   /* Circular timer */
-#autoSanitizeModal .timer-ring {
+  #autoSanitizeModal .timer-ring {
     width: min(70vw, 240px);
     height: min(70vw, 240px);
-    position: relative;
-    display: grid;
-    place-items: center;
     margin: 8px auto 6px;
+    display: grid;            /* <- grid, not absolute math */
+    place-items: center;
+    position: relative;       /* safe default */
   }
+  
   
   #autoSanitizeModal .ring-svg {
+    grid-area: 1 / 1;         /* share the same cell as the button */
     width: 100%;
     height: 100%;
-    transform: rotate(-90deg); /* start at 12 o'clock */
+    transform: rotate(-90deg);
+    position: relative;       /* so z-index applies */
+    z-index: 1;
+    pointer-events: none;
   }
-  
-  #autoSanitizeModal .ring-bg {
-    fill: none;
-    stroke: #e9eef3;
-    stroke-width: 12;
-  }
-  
-  #autoSanitizeModal .ring-fg {
-    fill: none;
-    stroke: #1976d2;              /* work color (updated in JS for break) */
-    stroke-width: 12;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1s linear, stroke .2s ease;
-    stroke-dasharray: 0 1;        /* set in JS */
-    stroke-dashoffset: 0;         /* set in JS */
-  }
+#autoSanitizeModal .ring-bg { fill: none; stroke: #e9eef3; stroke-width: 12; }
+#autoSanitizeModal .ring-fg {
+  fill: none; stroke: #1976d2; stroke-width: 12; stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear, stroke .2s ease;
+  stroke-dasharray: 0 1;  /* set in JS */  stroke-dashoffset: 0; /* set in JS */
+}
   
   #autoSanitizeModal .ring-label {
     position: absolute;
@@ -2478,4 +2477,79 @@ textarea::placeholder {
     line-height: 1;
     pointer-events: none;
   }
+  
+  /* Center pause button */
+  #autoSanitizeModal .ring-center-btn {
+    grid-area: 1 / 1;         /* sits exactly at the center */
+    position: static;         /* <- no absolute needed */
+    transform: none;          /* <- remove translate() */
+    z-index: 2;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  }
+  
+  #autoSanitizeModal .ring-center-btn .icon { width: 26px; height: 26px; fill: #9aa5b1; }
+  #autoSanitizeModal .ring-center-btn .icon-play { display: none; }           /* default: show pause */
+  #autoSanitizeModal .ring-center-btn.is-paused .icon-pause { display: none; } /* paused: show play */
+  #autoSanitizeModal .ring-center-btn.is-paused .icon-play  { display: block; }
+  
+  /* Countdown below the ring */
+  #autoSanitizeModal .countdown-below {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(24px, 8vw, 34px);
+    font-weight: 800;
+    color: #0b3d5c;
+    line-height: 1;
+    margin: 6px 0 10px;
+  }
+
+  /* Timer ring: stack and center children */
+#autoSanitizeModal .timer-ring {
+    width: min(70vw, 240px);
+    height: min(70vw, 240px);
+    margin: 8px auto 6px;
+    display: grid;           /* grid overlay */
+    place-items: center;
+    position: relative;
+  }
+  
+  /* SVG shares the same grid cell */
+  #autoSanitizeModal .timer-ring .ring-svg {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    position: relative;      /* so z-index applies */
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  /* Center button shares the same grid cell — NO absolute needed */
+  #autoSanitizeModal .timer-ring .ring-center-btn {
+    grid-area: 1 / 1;
+    position: static;        /* override any earlier absolute */
+    transform: none;         /* override translate */
+    z-index: 2;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    margin: 0;               /* ensure no stray margins */
+  }
+  
+  /* Icon swap (pause by default, play when paused) */
+  #autoSanitizeModal .ring-center-btn .icon-play { display: none; }
+  #autoSanitizeModal .ring-center-btn.is-paused .icon-pause { display: none; }
+  #autoSanitizeModal .ring-center-btn.is-paused .icon-play  { display: block; }
   
