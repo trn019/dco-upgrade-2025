@@ -206,7 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalEventListeners();
 
   // --- Sort dropdowns for rooms ---
-  buildRoomsGridFromData();
+  buildRoomsGridFromData({ scope: 'all' });   
+
 });
 
 function getAllRoomKeysFromData() {
@@ -243,25 +244,53 @@ function createRoomCardEl(roomKey) {
   return el;
 }
 
-function buildRoomsGridFromData() {
+// Get ALL tasks for a room across all days
+
+
+function getRoomKeys({ scope = 'all' } = {}) {
+  if (scope === 'currentDay') {
+    const dayObj = taskData[currentDay] || {};
+    return Object.keys(dayObj).sort();   // only rooms that have tasks today
+  }
+  // ✅ union across ALL days + roomData
+  const s = new Set();
+  Object.values(taskData || {}).forEach(d => Object.keys(d || {}).forEach(r => s.add(r)));
+  Object.keys(window.roomData || {}).forEach(r => s.add(r));   // <-- add this line
+  return Array.from(s).sort();
+}
+
+
+function buildRoomsGridFromData({ scope = 'all' } = {}) {
   const grid = document.querySelector('.rooms-grid');
   if (!grid) return;
-  const addCard = grid.querySelector('.add-room-card');
 
-  // Rebuild: keep Add card at the front
+  const addCard = grid.querySelector('.add-room-card');
   grid.innerHTML = '';
   if (addCard) grid.appendChild(addCard);
 
-  getAllRoomKeysFromData().forEach(roomKey => {
-    // Skip if already present (in case you pre-render some)
-    if (grid.querySelector(`.room-card[data-room="${roomKey}"]`)) return;
-    const card = createRoomCardEl(roomKey);
+  getRoomKeys({ scope }).forEach(roomKey => {
+    const card = document.createElement('div');
+    card.className = 'room-card';
+    card.setAttribute('data-room', roomKey);
+    card.innerHTML = `
+      <div class="room-header">
+        <div class="room-info">
+          <div class="room-name">${roomKey.charAt(0).toUpperCase() + roomKey.slice(1)}</div>
+          <div class="room-status">loading…</div>
+        </div>
+        <div class="status-indicator status-green"></div>
+      </div>
+      <div class="room-bottom">
+        <div class="task-count">0</div>
+        <div class="task-label">tasks</div>
+      </div>
+    `;
+    card.addEventListener('click', () => window.openRoomScreen && window.openRoomScreen(roomKey));
     grid.appendChild(card);
   });
 
   sortRoomsGridAZ();
-  refreshRoomsGridStats(); // paints counts + colors
-  
+  refreshRoomsGridStats({ scope });   // paint counts/colors for the same scope
 }
 
 
@@ -273,19 +302,25 @@ function buildRoomsGridFromData() {
     const addCard = e.target.closest('.add-room-card');
     if (!addCard) return;
 
-    const roomName = (prompt('New room name (e.g., “Garage”)') || '').trim();
+    const roomName = (prompt('New room name (e.g., "Garage")') || '').trim();
     if (!roomName) return;
 
     const key = roomName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-    if (!key) return alert('Invalid room name.');
+    if (!key) { alert('Invalid room name.'); return; }
 
-    if (document.querySelector(`.rooms-grid .room-card[data-room="${key}"]`)) {
-      return alert('That room already exists.');
+    if (grid.querySelector(`.room-card[data-room="${key}"]`)) {
+      alert('That room already exists.');
+      return;
     }
 
+    // ✅ make sure globals exist
+    window.roomData = window.roomData || {};
+    window.taskData = window.taskData || {};
+
     // Update data objects
-    roomData[key] = { emoji: '🧽', tasks: 0 };
+    roomData[key] = roomData[key] || { emoji: '🧽', tasks: 0 };
     Object.keys(taskData).forEach(day => {
+      taskData[day] = taskData[day] || {};
       taskData[day][key] = taskData[day][key] || [];
     });
 
@@ -307,16 +342,19 @@ function buildRoomsGridFromData() {
       </div>
     `;
 
-    // Insert new room AFTER the add-room card
     grid.insertBefore(card, addCard.nextSibling);
-    card.addEventListener('click', () => openRoomScreen(key));
-    card.querySelector('.room-name').textContent = roomName;
-  
-    sortRoomsGridAZ();
-    buildRoomsGridFromData();     
-  
 
-})});
+    // ✅ call the exposed global, not a local symbol
+    card.addEventListener('click', () => {
+      if (window.openRoomScreen) window.openRoomScreen(key);
+    });
+
+    // Rebuild to include the new room (and repaint counts/colors)
+    buildRoomsGridFromData({ scope: 'all' });   
+  });
+})();
+
+
 
 
 
@@ -1418,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    refreshRoomsGridStats();   // ⬅️ add this
+    buildRoomsGridFromData({ scope: 'all' });   
   });
 
 function closeRoomScreen() {
@@ -1927,6 +1965,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.classList.add('active');
       currentDay = item.dataset.day;
       updateTasksForDay(currentDay);
+      buildRoomsGridFromData({ scope: 'all' });   
       return;
     }
     if (e.target.closest('.expand-icon')) {
@@ -2882,15 +2921,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- Helpers to unify counts + color logic across the app ---
 
-// Get ALL tasks for a room across all days
-function getAllTasksForRoom(roomKey) {
-  const out = [];
-  Object.keys(taskData || {}).forEach(day => {
-    const list = (taskData[day] && taskData[day][roomKey]) || [];
-    if (Array.isArray(list)) out.push(...list);
-  });
-  return out;
-}
+
 
 // Average "remaining %" (same metric the Room screen uses)
 function getRoomAveragePercent(roomKey) {
@@ -2908,7 +2939,7 @@ function progressToStatusClass(color) {
 }
 
 // Recompute each room card’s indicator color + count (Rooms tab)
-function refreshRoomsGridStats() {
+function refreshRoomsGridStats({ scope = 'all' } = {}) {
   const grid = document.querySelector('.rooms-grid');
   if (!grid) return;
 
@@ -2916,19 +2947,17 @@ function refreshRoomsGridStats() {
     const key = card.getAttribute('data-room');
     if (!key) return;
 
-    // 1) Count = total across all days
-    const allTasks = getAllTasksForRoom(key);
-    const countEl  = card.querySelector('.task-count');
-    const labelEl  = card.querySelector('.task-label');
-    if (countEl) countEl.textContent = String(allTasks.length);
-    if (labelEl) labelEl.textContent = allTasks.length === 1 ? 'task' : 'tasks';
+    // count based on scope
+    const todays = (((window.taskData || {})[window.currentDay] || {})[key] || []);
+    const totalCount = scope === 'currentDay' ? todays.length : getAllTasksForRoom(key).length;
 
-    // 2) Color/status = EXACT same logic as Room screen
-    const { value, color, status } = getRoomHealth(key, {
-      scope: 'all',           // or 'currentDay' if you prefer
-      includeOneTime: false,  // match room screen logic
-      method: 'avg'           // or 'min'
-    });
+    const countEl = card.querySelector('.task-count');
+    const labelEl = card.querySelector('.task-label');
+    if (countEl) countEl.textContent = String(totalCount);
+    if (labelEl) labelEl.textContent = totalCount === 1 ? 'task' : 'tasks';
+
+    // color/status using the same scope
+    const { color, status } = getRoomHealth(key, { scope, includeOneTime: false, method: 'avg' });
 
     const dot = card.querySelector('.status-indicator');
     if (dot) {
@@ -2937,8 +2966,8 @@ function refreshRoomsGridStats() {
     }
 
     const statusLine = card.querySelector('.room-status');
-    if (statusLine) {
-      statusLine.textContent = allTasks.length ? status : 'No tasks yet';
-    }
+    if (statusLine) statusLine.textContent = totalCount ? status : 'No tasks yet';
   });
 }
+
+
