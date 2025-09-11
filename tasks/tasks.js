@@ -111,15 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Day selector ---
   renderDaySelector();  // ⬅️ builds Thu 7.., sets currentDay, calls updateTasksForDay()
 
-  // --- Shuffle button ---
-  const shuffleBtn = document.querySelector('.shuffle-btn');
-  if (shuffleBtn) {
-    shuffleBtn.addEventListener('click', () => {
-      shuffleBtn.style.transform = 'rotate(180deg)';
-      setTimeout(() => { shuffleBtn.style.transform = 'rotate(0deg)'; }, 300);
-      alert('Random task: Clean the bathroom mirror!');
-    });
-  }
+
 
   // --- Add task + floating options ---
   const addTaskBtn = document.querySelector('.add-task');
@@ -1069,13 +1061,14 @@ function daysAgoFromText(text) {
     
       return `
       <div class="task-item"
-     role="group" aria-expanded="false"
-     data-room="${roomKey}"
-     data-day="${dayKey}"
-     data-name="${task.name}"
-     data-effort="${task.effort || 'moderate'}"
-     data-last="${task.lastCleaned || ''}"
-     data-frequency="${task.frequency || ''}">
+        role="group" aria-expanded="false"
+        data-room="${roomKey}"
+        data-day="${dayKey}"
+        data-name="${task.name}"
+        data-effort="${task.effort || 'moderate'}"
+        data-last="${task.lastCleaned || ''}"
+        data-frequency="${task.frequency || ''}">
+        
         <div class="task-main">
           <div class="tm-row">
             <div class="tm-text">
@@ -1086,24 +1079,16 @@ function daysAgoFromText(text) {
             <div class="tm-progress">
               <div class="tm-track ${colorClass}">
                 <div class="tm-fill ${colorClass}" style="width:${pct}%;"></div>
-                <span class="tm-status">${status}</span>
               </div>
+              <div class="tm-status">${status}</div>
+              ${renderEffortDots(task.effort)}   <!-- ⬅️ dots now share the same container -->
             </div>
           </div>
     
-          <div class="tm-bottom">
-            <div class="tm-recur"><span>${task.frequency || ''}</span></div>
-            <div class="tm-quick">
-              <button class="qa-btn qa-dot"   aria-label="Quick 1"></button>
-              <button class="qa-btn qa-dot"   aria-label="Quick 2"></button>
-              <button class="qa-btn qa-ring"  aria-label="Quick ring"></button>
-            </div>
-          </div>
+
         </div>
     
-        <!-- keep your action tray exactly as you already wired -->
         <div class="task-actions" aria-hidden="true">
-
           <button class="ta-back"  aria-label="Back">‹</button>
           <button class="ta-done"  aria-label="Mark Done">✔<span>Mark Done!</span></button>
           <button class="ta-focus" aria-label="Focus">⌛<span>Focus</span></button>
@@ -1111,6 +1096,7 @@ function daysAgoFromText(text) {
         </div>
       </div>`;
     };
+    
     
     
   
@@ -1297,7 +1283,56 @@ let roomSort = 'urgency'; // default sort for the room screen
 (function initRoomScreen() {
   const screenEl   = document.getElementById('room-screen');
   const titleEl    = document.getElementById('roomScreenTitle');
-  const listEl     = document.getElementById('roomScreenTasks');
+  const listEl = document.getElementById('roomScreenTasks');
+
+  // Focus from a room task -> open Auto-Sanitize Review with THIS task
+// Room screen: open/close the same action tray + Focus wiring
+listEl.addEventListener('click', (e) => {
+  const card = e.target.closest('.task-item');
+  if (!card) return;
+
+  // Action tray buttons
+  if (e.target.closest('.ta-back'))  { closeCard(card); return; }
+  if (e.target.closest('.ta-done'))  {
+    // placeholder "done" feedback
+    card.style.opacity = .6;
+    setTimeout(()=>{ card.style.opacity = 1; }, 250);
+    closeCard(card);
+    return;
+  }
+  if (e.target.closest('.ta-edit'))  {
+    alert('Edit coming soon ✏️');
+    closeCard(card);
+    return;
+  }
+  if (e.target.closest('.ta-focus')) {
+    // Open Auto-Sanitize Review with THIS task
+    const ds = card.dataset;
+    const roomKey  = ds.room || '';
+    const roomName = roomKey ? roomKey.charAt(0).toUpperCase() + roomKey.slice(1) : '';
+
+    asOpen();
+    AS.currentTask = {
+      room: roomKey,
+      roomName,
+      task: {
+        name: ds.name || '',
+        lastCleaned: ds.last || '',
+        frequency: ds.frequency || '',
+        effort: ds.effort || 'moderate'
+      }
+    };
+    asRenderStart();
+    asShowReview();
+    closeCard(card);
+    return;
+  }
+
+  // Toggle open/close when clicking the card
+  card.classList.contains('open') ? closeCard(card) : openCard(card);
+});
+
+
   const backBtn    = document.getElementById('roomScreenBack');
   const progFill   = document.getElementById('roomProgressFill');
   const progPctEl  = document.getElementById('roomProgressPct');
@@ -1306,6 +1341,7 @@ let roomSort = 'urgency'; // default sort for the room screen
   const sortBtn    = document.getElementById('roomSortBtn');
   const sortMenu   = document.getElementById('roomSortMenu');
   const dropdown   = sortBtn?.closest('.dropdown');
+
 
   // wire: clicking room cards opens this screen
 // ✅ ONE listener on the grid that works for all current/future cards
@@ -1399,7 +1435,15 @@ let roomSort = 'urgency'; // default sort for the room screen
   
     // sort + render list
     const sorted = sortTasks(tasksForRoom, roomSort);
-    listEl.innerHTML = renderTasks(sorted);
+    listEl.innerHTML = renderTasks(sorted, roomKey);
+    listEl.querySelectorAll('.task-item').forEach(c => {
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded','false');
+      c.querySelector('.task-actions')?.setAttribute('aria-hidden','true');
+    });
+    if (typeof closeCard === 'function' && typeof openCardRef !== 'undefined' && openCardRef) {
+      closeCard(openCardRef);
+    }
   }
   
 
@@ -1435,10 +1479,11 @@ let roomSort = 'urgency'; // default sort for the room screen
     return copy;
   }
 
-  function renderTasks(tasks) {
+  function renderTasks(tasks, roomKey) {
     if (!tasks.length) {
       return `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
     }
+  
     return tasks.map(t => {
       const pct = Math.max(0, Math.min(100, Number(computeProgressPercent(t.lastCleaned, t.frequency) || 0)));
       const colorClass = progressColorClass(pct);
@@ -1448,28 +1493,48 @@ let roomSort = 'urgency'; // default sort for the room screen
         pct <= 66 ? 'Getting dusty...' :
         'Looking good!';
   
+      // NOTE: same structure/classes as Tasks-by-day cards (task-main + task-actions overlay)
       return `
-    <div class="room-task-card">
-      <div class="task-top">
-        <div class="task-left">
-          <p class="room-task-name">${t.name}</p>
-          <p class="task-last">${t.lastCleaned || ''}</p>
+      <div class="task-item"
+           role="group" aria-expanded="false"
+           data-room="${roomKey || ''}"
+           data-day="${t._day || ''}"
+           data-name="${t.name || ''}"
+           data-last="${t.lastCleaned || ''}"
+           data-frequency="${t.frequency || ''}"
+           data-effort="${t.effort || 'moderate'}">
+  
+        <div class="task-main">
+          <div class="tm-row">
+            <div class="tm-text">
+              <div class="tm-title">${t.name}</div>
+              <div class="tm-sub">cleaned ${t.lastCleaned || '—'} ago</div>
+            </div>
+  
+            <div class="tm-progress">
+            <div class="tm-track ${colorClass}">
+              <div class="tm-fill ${colorClass}" style="width:${pct}%;"></div>
+            </div>
+            <div class="tm-status">${status}</div>
+            ${renderEffortDots(t.effort)}   <!-- ⬅️ same container -->
+          </div>
+          
+          </div>
+  
+
         </div>
-        <div class="task-right">
-          <p class="status-text">${status}</p>
-          <div class="progress-bar ${colorClass}">
-    <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
-  </div>
-          ${renderEffortDots(t.effort)}
+  
+        <div class="task-actions" aria-hidden="true">
+          <button class="ta-back"  aria-label="Back">‹</button>
+          <button class="ta-done"  aria-label="Mark Done">✔<span>Mark Done!</span></button>
+          <button class="ta-focus" aria-label="Focus">⌛<span>Focus</span></button>
+          <button class="ta-edit"  aria-label="Edit">✎<span>Edit</span></button>
         </div>
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:#666;">
-        <span>${t.frequency || ''}</span>
-        <span>${(t._day || '').toUpperCase()}</span>
-      </div>
-    </div>`;
+      </div>`;
     }).join('');
   }
+  
+  
   
   
 })();
@@ -1847,6 +1912,34 @@ function asPickLowEffort() {
     });
     return out;
   };
+
+  function asPickLowEffortInRoom(roomKey) {
+    const rows = [];
+    Object.keys(taskData).forEach(dayKey => {
+      const tasks = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
+      tasks.forEach(t => {
+        const eff = (t.effort || 'moderate').toLowerCase();
+        const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+        if (eff === 'low' || pct <= 33) {
+          rows.push({
+            room: roomKey,
+            roomName: roomKey.charAt(0).toUpperCase() + roomKey.slice(1),
+            task: t,
+            day: dayKey
+          });
+        }
+      });
+    });
+    rows.sort((a, b) => {
+      const pa = computeProgressPercent(a.task.lastCleaned, a.task.frequency);
+      const pb = computeProgressPercent(b.task.lastCleaned, b.task.frequency);
+      const ea = (a.task.effort || 'moderate') === 'low' ? 0 : 1;
+      const eb = (b.task.effort || 'moderate') === 'low' ? 0 : 1;
+      return (pa - pb) || (ea - eb);
+    });
+    return rows[0] || null;
+  }
+  
 
   // prefer current day; then all
   let list = collect([dayKey]);
@@ -2232,6 +2325,7 @@ asOpen();              // open Auto-Sanitize modal
 asShowReview();        // go straight to Review
 }
 
+
   
 });
 
@@ -2587,3 +2681,35 @@ tasksPane?.addEventListener('click', (e) => {
 });
 
 });
+
+function bindAllShuffleButtons() {
+  document.querySelectorAll('.shuffle-btn').forEach(btn => {
+    const fresh = btn.cloneNode(true);   // strip old listeners
+    btn.replaceWith(fresh);
+
+    fresh.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // Are we on the Room Details screen?
+      const roomScreen = document.getElementById('room-screen');
+      const onRoomScreen = roomScreen && roomScreen.classList.contains('active');
+      const roomKey = onRoomScreen ? (roomScreen.dataset.roomKey || '') : '';
+
+      // Open AS modal
+      asOpen();
+
+      // Pick a task with context (room-scoped if on room screen)
+      let picked = roomKey ? asPickLowEffortInRoom(roomKey) : asPickLowEffort();
+      if (!picked) picked = asPickLowEffort();  // fallback global
+
+      if (picked) {
+        AS.currentTask = picked;
+        asRenderStart();
+        asShowReview();      // jump straight to Review
+      }
+    });
+  });
+}
+
+// Call it once after the DOM is ready
+document.addEventListener('DOMContentLoaded', bindAllShuffleButtons);

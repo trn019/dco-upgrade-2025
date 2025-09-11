@@ -1233,9 +1233,22 @@ textarea::placeholder {
     margin: 0;
   }
 /* Effort as dots */
-.effort-dots{display:inline-flex;gap:4px;vertical-align:middle}
-.effort-dot{width:8px;height:8px;border-radius:50%;background:#ddd}
-.effort-dot.filled{background:#666}
+/* Effort dots row */
+.effort-dots {
+    width: 120px;          /* match .tm-track width so the middle dot aligns */
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+  .effort-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ddd;
+  }
+  .effort-dot.filled {
+    background: #1976d2;   /* highlight color */
+  }
 
 /* Progress bar lives in the right column now */
 .task-right .progress-bar {
@@ -2760,3 +2773,35 @@ textarea::placeholder {
 
 /* (Optional) hard align edges for tray buttons */
 .task-actions button{ height: calc(var(--task-card-h) - 2px); }
+
+.rs-focus:hover { filter: brightness(0.97); }
+.rs-focus:active { transform: translateY(1px); }
+.rs-focus:focus { outline: 2px solid #1976d2; outline-offset: 2px; }
+
+/* Make progress area a vertical stack: bar on top, status below */
+.tm-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* everything aligned to the center line */
+    gap: 6px;
+  }
+  
+  
+  
+ /* Progress bar centered */
+ .tm-track { 
+    width: 120px;          /* or your preferred width */
+    margin: 0 auto;
+  }
+  
+  /* Status now sits BELOW the bar, not inside it */
+  .tm-status {
+    position: static;         /* override previous absolute */
+    transform: none;          /* override */
+    right: auto; top: auto;   /* override */
+    font-size: 12px;
+    color: #9aa5b1;
+    text-align: center;        /* optional: align to the bar’s right edge */
+    pointer-events: none;
+  }
+  
