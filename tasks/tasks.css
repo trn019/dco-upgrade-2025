@@ -493,9 +493,9 @@
   }
 
   /* Rooms tab stays normal */
-#rooms-content {
-    display: none; /* hidden by default */
-    flex-direction: column;
+  #rooms-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #rooms-content.active {

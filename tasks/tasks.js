@@ -1,60 +1,61 @@
-const taskData = {
-  "thu-7": {
-    bedroom: [
-      { name: "Vacuum Floor", lastCleaned: "3 weeks ago", progress: 85, status: "Uh oh...", frequency: "Every week", progressType: "red", effort: "high" },
-      { name: "Organize Closet", lastCleaned: "3 weeks ago", progress: 60, status: "Getting dusty...", frequency: "Every month", progressType: "yellow", effort: "moderate" },
-      { name: "Change Sheets", lastCleaned: "1 week ago", progress: 50, status: "Needs fresh sheets", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
-      { type: "one-time", name: "Bag Clothes for Donation", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ],
-    kitchen: [
-      { name: "Clean Countertops", lastCleaned: "2 days ago", progress: 20, status: "Looking good!", frequency: "Every 3 days", progressType: "green", effort: "low" },
-      { name: "Wash Dishes", lastCleaned: "yesterday", progress: 40, status: "Some dishes piling up", frequency: "Daily", progressType: "yellow", effort: "low" },
-      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Greasy again", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
-      { name: "Take Out Trash", lastCleaned: "today", progress: 10, status: "Empty bin", frequency: "Daily", progressType: "green", effort: "low" },
-      { type: "one-time", name: "Descale Kettle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ],
-    bathroom: [
-      { name: "Clean Mirror", lastCleaned: "4 days ago", progress: 60, status: "Getting spotted", frequency: "Weekly", progressType: "yellow", effort: "low" },
-      { name: "Scrub Shower", lastCleaned: "2 weeks ago", progress: 80, status: "Mildew starting", frequency: "Biweekly", progressType: "red", effort: "high" },
-      { type: "one-time", name: "Replace Shower Curtain Liner", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ],
-    living: [
-      { name: "Dust TV Stand", lastCleaned: "5 days ago", progress: 55, status: "Light dust visible", frequency: "Weekly", progressType: "yellow", effort: "low" },
-      { type: "one-time", name: "Hang Picture Frame", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ]
-  },
+// const taskData = {
+//   "thu-7": {
+//     bedroom: [
+//       { name: "Vacuum Floor", lastCleaned: "3 weeks ago", progress: 85, status: "Uh oh...", frequency: "Every week", progressType: "red", effort: "high" },
+//       { name: "Organize Closet", lastCleaned: "3 weeks ago", progress: 60, status: "Getting dusty...", frequency: "Every month", progressType: "yellow", effort: "moderate" },
+//       { name: "Change Sheets", lastCleaned: "1 week ago", progress: 50, status: "Needs fresh sheets", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+//       { type: "one-time", name: "Bag Clothes for Donation", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ],
+//     kitchen: [
+//       { name: "Clean Countertops", lastCleaned: "2 days ago", progress: 20, status: "Looking good!", frequency: "Every 3 days", progressType: "green", effort: "low" },
+//       { name: "Wash Dishes", lastCleaned: "yesterday", progress: 40, status: "Some dishes piling up", frequency: "Daily", progressType: "yellow", effort: "low" },
+//       { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Greasy again", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+//       { name: "Take Out Trash", lastCleaned: "today", progress: 10, status: "Empty bin", frequency: "Daily", progressType: "green", effort: "low" },
+//       { type: "one-time", name: "Descale Kettle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ],
+//     bathroom: [
+//       { name: "Clean Mirror", lastCleaned: "4 days ago", progress: 60, status: "Getting spotted", frequency: "Weekly", progressType: "yellow", effort: "low" },
+//       { name: "Scrub Shower", lastCleaned: "2 weeks ago", progress: 80, status: "Mildew starting", frequency: "Biweekly", progressType: "red", effort: "high" },
+//       { type: "one-time", name: "Replace Shower Curtain Liner", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ],
+//     living: [
+//       { name: "Dust TV Stand", lastCleaned: "5 days ago", progress: 55, status: "Light dust visible", frequency: "Weekly", progressType: "yellow", effort: "low" },
+//       { type: "one-time", name: "Hang Picture Frame", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ]
+//   },
 
-  "fri-8": {
-    bedroom: [
-      { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" },
-      { type: "one-time", name: "Swap Summer/Winter Bedding", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
-    ],
-    kitchen: [
-      { name: "Wash Dishes", lastCleaned: "this morning", progress: 10, status: "Fresh!", frequency: "Daily", progressType: "green", effort: "low" },
-      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
-      { type: "one-time", name: "Run Dishwasher Cleaner Cycle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ],
-    living: [
-      { type: "one-time", name: "Spot Clean Couch", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ]
-  },
+//   "fri-8": {
+//     bedroom: [
+//       { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" },
+//       { type: "one-time", name: "Swap Summer/Winter Bedding", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
+//     ],
+//     kitchen: [
+//       { name: "Wash Dishes", lastCleaned: "this morning", progress: 10, status: "Fresh!", frequency: "Daily", progressType: "green", effort: "low" },
+//       { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+//       { type: "one-time", name: "Run Dishwasher Cleaner Cycle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ],
+//     living: [
+//       { type: "one-time", name: "Spot Clean Couch", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ]
+//   },
 
-  "sat-9": {
-    bedroom: [
-      { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" },
-      { type: "one-time", name: "Assemble Nightstand", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
-    ],
-    kitchen: [
-      { name: "Deep Clean Fridge", lastCleaned: "1 month ago", progress: 90, status: "Overdue!", frequency: "Monthly", progressType: "red", effort: "high" }
-    ],
-    bathroom: [
-      { type: "one-time", name: "Re-caulk Sink Edge", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
-    ],
-    living: [
-      { type: "one-time", name: "Wrap Extension Cables w/ Clips", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
-    ]
-  }
-};
+//   "sat-9": {
+//     bedroom: [
+//       { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" },
+//       { type: "one-time", name: "Assemble Nightstand", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
+//     ],
+//     kitchen: [
+//       { name: "Deep Clean Fridge", lastCleaned: "1 month ago", progress: 90, status: "Overdue!", frequency: "Monthly", progressType: "red", effort: "high" }
+//     ],
+//     bathroom: [
+//       { type: "one-time", name: "Re-caulk Sink Edge", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
+//     ],
+//     living: [
+//       { type: "one-time", name: "Wrap Extension Cables w/ Clips", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+//     ]
+//   }
+// };
+
 
   
 // Persist collapsed state per day -> room
@@ -66,21 +67,21 @@ const setCollapsed = (day, room, val) => {
 
 
 
-const roomData = {
-    bedroom: { emoji: "🛏️", tasks: 2 },
-    kitchen: { emoji: "🍳", tasks: 1 },
-    bathroom: { emoji: "🚿", tasks: 3 },
-    living: { emoji: "🛋️", tasks: 1 }
-};
+// const roomData = {
+//     bedroom: { emoji: "🛏️", tasks: 2 },
+//     kitchen: { emoji: "🍳", tasks: 1 },
+//     bathroom: { emoji: "🚿", tasks: 3 },
+//     living: { emoji: "🛋️", tasks: 1 }
+// };
 
 // Map each room to its unique image URL
-const ROOM_IMAGES = {
-  kitchen:  'images/rooms/kitchen.jpg',
-  bedroom:  'images/rooms/bedroom.jpg',
-  bathroom: 'images/rooms/bathroom.jpg',
-  living:   'images/rooms/living.jpg',
-  // add more as needed...
-};
+// const ROOM_IMAGES = {
+//   kitchen:  'images/rooms/kitchen.jpg',
+//   bedroom:  'images/rooms/bedroom.jpg',
+//   bathroom: 'images/rooms/bathroom.jpg',
+//   living:   'images/rooms/living.jpg',
+//   // add more as needed...
+// };
 
 let currentSort = 'cleanliness'; // 'cleanliness' | 'effort-asc'
 
@@ -96,6 +97,42 @@ let selectedNumber = 7; // Default to 7
 let selectedUnit = 'days'; // Default to days
 let selectedRepeat = 'On Monday';
 let selectedTime = 'Time';
+
+// ---- Unified room health (one source of truth) ----
+// scope: 'all' (all days) or 'currentDay'
+// includeOneTime: whether to include {type:'one-time'} tasks (we'll use false so one-offs don't inflate health)
+// method: 'avg' (mean remaining %) or 'min' (most-due)
+function getRoomHealth(roomKey, { scope = 'all', includeOneTime = false, method = 'avg' } = {}) {
+  const tasks = (scope === 'currentDay')
+    ? ((taskData[currentDay] && taskData[currentDay][roomKey]) || [])
+    : getAllTasksForRoom(roomKey);
+
+  const filtered = includeOneTime ? tasks : tasks.filter(t => t.type !== 'one-time');
+  if (!filtered.length) return { value: 100, color: 'progress-green', status: 'Looking good!' };
+
+  const arr = filtered.map(t => computeProgressPercent(t.lastCleaned, t.frequency));
+  const value = method === 'min' ? Math.min(...arr) : Math.round(arr.reduce((a,b)=>a+b,0) / arr.length);
+  const color = progressColorClass(value);  // 'progress-green' | 'progress-yellow' | 'progress-red'
+  const status = statusFromPercent(value);
+  return { value, color, status };
+}
+
+// If you don't have this yet (from earlier), add it:
+function getAllTasksForRoom(roomKey) {
+  const out = [];
+  Object.keys(taskData || {}).forEach(day => {
+    const list = (taskData[day] && taskData[day][roomKey]) || [];
+    if (Array.isArray(list)) out.push(...list);
+  });
+  return out;
+}
+
+function progressToStatusClass(color) {
+  return color === 'progress-red' ? 'status-red'
+       : color === 'progress-yellow' ? 'status-yellow'
+       : 'status-green';
+}
+
 
 // place this at the VERY top of tasks.js (before DOMContentLoaded, before updateTasksForDay)
 (function preselectTab() {
@@ -169,8 +206,63 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalEventListeners();
 
   // --- Sort dropdowns for rooms ---
-  sortRoomsGridAZ();
+  buildRoomsGridFromData();
 });
+
+function getAllRoomKeysFromData() {
+  const s = new Set();
+  Object.values(window.taskData || {}).forEach(dayObj => {
+    Object.keys(dayObj || {}).forEach(room => s.add(room));
+  });
+  Object.keys(window.roomData || {}).forEach(room => s.add(room));
+  return Array.from(s).sort(); // alphabetical
+}
+
+function prettyRoomName(key) {
+  return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function createRoomCardEl(roomKey) {
+  const el = document.createElement('div');
+  el.className = 'room-card';
+  el.setAttribute('data-room', roomKey);
+  el.innerHTML = `
+    <div class="room-header">
+      <div class="room-info">
+        <div class="room-name">${prettyRoomName(roomKey)}</div>
+        <div class="room-status">loading…</div>
+      </div>
+      <div class="status-indicator status-green"></div>
+    </div>
+    <div class="room-bottom">
+      <div class="task-count">0</div>
+      <div class="task-label">tasks</div>
+    </div>
+  `;
+  el.addEventListener('click', () => window.openRoomScreen && window.openRoomScreen(roomKey));
+  return el;
+}
+
+function buildRoomsGridFromData() {
+  const grid = document.querySelector('.rooms-grid');
+  if (!grid) return;
+  const addCard = grid.querySelector('.add-room-card');
+
+  // Rebuild: keep Add card at the front
+  grid.innerHTML = '';
+  if (addCard) grid.appendChild(addCard);
+
+  getAllRoomKeysFromData().forEach(roomKey => {
+    // Skip if already present (in case you pre-render some)
+    if (grid.querySelector(`.room-card[data-room="${roomKey}"]`)) return;
+    const card = createRoomCardEl(roomKey);
+    grid.appendChild(card);
+  });
+
+  sortRoomsGridAZ();
+  refreshRoomsGridStats(); // paints counts + colors
+  
+}
 
 
 (function initAddRoomCard() {
@@ -217,13 +309,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Insert new room AFTER the add-room card
     grid.insertBefore(card, addCard.nextSibling);
-
     card.addEventListener('click', () => openRoomScreen(key));
     card.querySelector('.room-name').textContent = roomName;
-sortRoomsGridAZ();
-  });
+  
+    sortRoomsGridAZ();
+    buildRoomsGridFromData();     
+  
 
-})();
+})});
+
 
 
 
@@ -1219,6 +1313,9 @@ sections.forEach(section => {
   }
 });
 
+refreshRoomsGridStats();   // keep Rooms tab in sync after any changes
+
+
   }
   
   
@@ -1320,7 +1417,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
-    sortRoomsGridAZ();
+
+    refreshRoomsGridStats();   // ⬅️ add this
   });
 
 function closeRoomScreen() {
@@ -1436,16 +1534,28 @@ let roomSort = 'urgency'; // default sort for the room screen
     const tasksForRoom = collectRoomTasks(roomKey);
 
     // Progress header (average of recurrings; one-time will still be counted by your compute fn)
-    const pctArray = tasksForRoom.map(t => computeProgressPercent(t.lastCleaned, t.frequency));
-    const avg = pctArray.length ? Math.round(pctArray.reduce((a,b)=>a+b,0)/pctArray.length) : 0;
-    const colorClass = progressColorClass(avg);
-    const barEl = progFill.parentElement;
-    barEl.classList.remove('progress-green','progress-yellow','progress-red');
-    barEl.classList.add(colorClass);
-    progFill.className = `progress-fill ${colorClass}`;
-    progFill.style.width = `${avg}%`;
-    progPctEl.textContent = '';
-    progLabel.textContent = '';
+    // const pctArray = tasksForRoom
+    // .filter(t => t.type !== 'one-time')
+    // .map(t => computeProgressPercent(t.lastCleaned, t.frequency));
+  
+    // const avg = pctArray.length ? Math.round(pctArray.reduce((a,b)=>a+b,0)/pctArray.length) : 0;
+    // const colorClass = progressColorClass(avg);
+    // const barEl = progFill.parentElement;
+    // barEl.classList.remove('progress-green','progress-yellow','progress-red');
+    // barEl.classList.add(colorClass);
+    // progFill.className = `progress-fill ${colorClass}`;
+    // progFill.style.width = `${avg}%`;
+    // progPctEl.textContent = '';
+    // progLabel.textContent = '';
+    const { value, color } = getRoomHealth(roomKey, { scope: 'all', includeOneTime: false, method: 'avg' });
+
+// apply to the header bar
+const barEl = progFill.parentElement;
+barEl.classList.remove('progress-green','progress-yellow','progress-red');
+barEl.classList.add(color);
+progFill.classList.remove('progress-green','progress-yellow','progress-red');
+progFill.classList.add(color);
+progFill.style.width = `${value}%`;
 
     // List
     const sorted = sortTasks(tasksForRoom, roomSort);
@@ -2769,3 +2879,66 @@ document.addEventListener('DOMContentLoaded', () => {
     // setTimeout(() => card.remove(), 250); // if you want to remove it
   });
 });
+
+// --- Helpers to unify counts + color logic across the app ---
+
+// Get ALL tasks for a room across all days
+function getAllTasksForRoom(roomKey) {
+  const out = [];
+  Object.keys(taskData || {}).forEach(day => {
+    const list = (taskData[day] && taskData[day][roomKey]) || [];
+    if (Array.isArray(list)) out.push(...list);
+  });
+  return out;
+}
+
+// Average "remaining %" (same metric the Room screen uses)
+function getRoomAveragePercent(roomKey) {
+  const list = getAllTasksForRoom(roomKey);
+  if (!list.length) return 100; // empty rooms look "all good"
+  const sum = list.reduce((s, t) => s + computeProgressPercent(t.lastCleaned, t.frequency), 0);
+  return Math.round(sum / list.length);
+}
+
+// Map progress-* color to status-* color used by the Rooms grid
+function progressToStatusClass(color) {
+  if (color === 'progress-red') return 'status-red';
+  if (color === 'progress-yellow') return 'status-yellow';
+  return 'status-green';
+}
+
+// Recompute each room card’s indicator color + count (Rooms tab)
+function refreshRoomsGridStats() {
+  const grid = document.querySelector('.rooms-grid');
+  if (!grid) return;
+
+  grid.querySelectorAll('.room-card:not(.add-room-card)').forEach(card => {
+    const key = card.getAttribute('data-room');
+    if (!key) return;
+
+    // 1) Count = total across all days
+    const allTasks = getAllTasksForRoom(key);
+    const countEl  = card.querySelector('.task-count');
+    const labelEl  = card.querySelector('.task-label');
+    if (countEl) countEl.textContent = String(allTasks.length);
+    if (labelEl) labelEl.textContent = allTasks.length === 1 ? 'task' : 'tasks';
+
+    // 2) Color/status = EXACT same logic as Room screen
+    const { value, color, status } = getRoomHealth(key, {
+      scope: 'all',           // or 'currentDay' if you prefer
+      includeOneTime: false,  // match room screen logic
+      method: 'avg'           // or 'min'
+    });
+
+    const dot = card.querySelector('.status-indicator');
+    if (dot) {
+      dot.classList.remove('status-green','status-yellow','status-red');
+      dot.classList.add(progressToStatusClass(color));
+    }
+
+    const statusLine = card.querySelector('.room-status');
+    if (statusLine) {
+      statusLine.textContent = allTasks.length ? status : 'No tasks yet';
+    }
+  });
+}
