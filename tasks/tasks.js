@@ -2110,11 +2110,7 @@ const updateTimeBeginLabel = () => {
   });
 
   // Done page
-  document.getElementById('asAnotherBtn')?.addEventListener('click', ()=>{
-    AS.currentTask = asPickLowEffort();
-    asRenderStart();
-    asGoto('start');
-  });
+
 
   const celebrate = () => {
     AS.currentTask = asPickLowEffort();
@@ -2136,7 +2132,28 @@ const updateTimeBeginLabel = () => {
     const tasksTabBtn = document.querySelector('.tab[data-tab="tasks"]');
     if (tasksTabBtn) tasksTabBtn.click();
   });
+
+  // Deep link: tasks.html#as=review or ?as=review
+const wantsReview = location.hash.includes('as=review') ||
+new URLSearchParams(location.search).get('as') === 'review';
+if (wantsReview) {
+activateTab('tasks');  // ensure Tasks tab is visible
+asOpen();              // open Auto-Sanitize modal
+asShowReview();        // go straight to Review
+}
+
+  
 });
+
+// document.addEventListener('DOMContentLoaded', () => {
+//   const wantsReview = location.hash.includes('as=review') ||
+//                       new URLSearchParams(location.search).get('as') === 'review';
+//   if (wantsReview) {
+//     activateTab('tasks');  // ensure Tasks tab is visible
+//     asOpen();              // open Auto-Sanitize modal
+//     asShowReview();        // go straight to the Review page
+//   }
+// });
 
 function asStartTimer(totalSecs, mode = 'work', resumeRemaining = null) {
   if (!window.AS) window.AS = {};

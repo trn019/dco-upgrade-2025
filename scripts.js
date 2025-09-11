@@ -167,7 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------
     document.addEventListener('click', (e) => {
       const completeBtn = e.target.closest('.btn-complete');
-      const focusBtn = e.target.closest('.btn-focus-mode');
+      document.addEventListener('click', (e) => {
+        const focusBtn = e.target.closest('.btn-focus-mode');
+        if (focusBtn) {
+          location.href = './tasks/tasks.html#as=review';   // go to Tasks Review page
+        }
+      });
   
       if (completeBtn) {
         const originalText = completeBtn.textContent;
@@ -181,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
       if (focusBtn) {
         const originalText = focusBtn.textContent;
-        focusBtn.textContent = 'Focus Mode Active';
+        focusBtn.textContent = 'Begin Focus Mode';
         focusBtn.style.background = '#f44336';
         setTimeout(() => {
           focusBtn.textContent = originalText;
