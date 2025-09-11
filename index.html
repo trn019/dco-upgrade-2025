@@ -14,7 +14,10 @@
       <h1 class="greeting">Hello, xxx</h1>
 
       <!-- Incoming Tasks -->
-      <h2 class="incoming-title">Incoming Tasks!</h2>
+      <div class="section-header">
+        <h2 class="incoming-title">What's on your plate today?</h2>
+        <a href="./tasks/tasks.html" class="view-all">View all</a>
+      </div>
       <div class="task-carousel">
         <button class="carousel-nav prev" aria-label="Previous slide">‹</button>
         <div class="carousel-viewport" aria-roledescription="carousel">
@@ -58,50 +61,73 @@
       </div>
 
       <!-- Watch Out Section -->
-      <section class="watch-out">
-        <h3 class="section-title">Watch Out!</h3>
-        <h4 class="watch-out-subtitle">Make sure to check on this room!</h4>
-        <div class="room-card">
-          <div class="room-image">🏠</div>
-          <div class="room-info">
-            <h5>Kitchen</h5>
-            <p>cleaned 3 weeks ago or 30% clean</p>
-            <div class="progress-bar">
-              <div class="progress-fill"></div>
+      <section class="watch-out" id="watchOut">
+        <div class="section-header">
+          <h3 class="section-title">Let's check out this room...</h3>
+          <a href="./tasks/tasks.html" class="view-all">View all</a>
+        </div>
+      
+        <div id="watchOutList"></div>
+      </section>  
+
+      <section class="crushed" id="crushed">
+        <div class="section-header">
+          <h3 class="section-title">You Crushed It This Week!</h3>
+        </div>
+      
+        <div class="crushed-stats">
+          <!-- Tasks Completed -->
+          <div class="crushed-card">
+            <p class="crushed-label-top">You completed:</p>
+            <div class="crushed-value-row">
+              <p class="crushed-value">
+                <span id="tasksCompleted">14</span> Tasks
+              </p>
+              <span class="crushed-icon">✔️</span>
+            </div>
+          </div>
+      
+          <!-- Time Spent -->
+          <div class="crushed-card">
+            <p class="crushed-label-top">Time spent cleaning:</p>
+            <div class="crushed-value-row">
+              <p class="crushed-value" id="timeSpent">5h 20m</p>
+              <span class="crushed-icon">⏱️</span>
             </div>
           </div>
         </div>
+        <!-- Sparkling Rooms -->
+        <div class="crushed-rooms" id="crushedRooms">
+          <!-- <div class="room-card">
+            <div class="room-image">🛋️</div>
+            <div class="room-info">
+              <h5>Living Room</h5>
+              <p class="sparkling">The living room is sparkling ✨</p>
+              <div class="progress-bar clean-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+          </div> -->
+        
+          <!-- <div class="room-card">
+            <div class="room-image">🍽️</div>
+            <div class="room-info">
+              <h5>Kitchen</h5>
+              <p class="sparkling">The kitchen is sparkling ✨</p>
+              <div class="progress-bar clean-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+        
+        
+        
       </section>
-
-      <!-- Demo Sections -->
-      <!-- <div class="demo-section">
-        <h4>Day Selection Demo:</h4>
-        <div class="demo-controls">
-          <div class="day-item active">Mon</div>
-          <div class="day-item">Tue</div>
-          <div class="day-item">Wed</div>
-          <div class="day-item">Thu</div>
-          <div class="day-item">Fri</div>
-        </div>
-      </div>
-
-      <div class="demo-section">
-        <h4>Tab Demo:</h4>
-        <div class="demo-controls">
-          <button class="tab active">Home</button>
-          <button class="tab">Tasks</button>
-          <button class="tab">Schedule</button>
-        </div>
-      </div>
-
-      <div class="demo-section">
-        <h4>Action Buttons:</h4>
-        <div class="demo-controls">
-          <button class="shuffle-btn">🔄</button>
-        </div>
-      </div>
-    </div> -->
-
+      
+      
+      
+      
     <!-- Bottom Nav -->
     <nav>
       <a href="./index.html"><img src="./nav-img/home.png" alt="Home" /></a>
@@ -110,7 +136,7 @@
       <a href="./notif/notif.html"><img src="./nav-img/notifications.png" alt="Notifications" /></a>
     </nav>
   </div>
-
+  <script src="./data.js"></script>
   <script src="./scripts.js"></script>
 </body>
 </html>

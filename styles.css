@@ -6,23 +6,19 @@ body {
     max-width: 434px;
     margin: 0 auto;
     min-height: 100vh;
-    position: relative;
-}
+  }
 
-#iphone-16-pro {
+  #iphone-16-pro {
     width: 402px;
-    height: 874px;
+    height: 874px;                 /* fixed demo height */
     border: 16px solid black;
     border-radius: 47px;
     position: relative;
     background: white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    overflow: hidden;
-  
-    display: flex;           /* NEW */
-    flex-direction: column;  /* NEW */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;              /* keep frame mask; content scrolls in .container */
   }
-  
 
   #iphone-16-pro nav {
     position: absolute;

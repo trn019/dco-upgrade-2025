@@ -10,22 +10,18 @@
   .incoming-title {
     font-size: 28px;
     font-weight: bold;
-    margin-bottom: 20px;
     color: #333;
+    margin: 0; /* reset so alignment works cleanly */
   }
+  
   
   .section-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 10px;
     color: #333;
+    margin: 0;
   }
-  
-  .watch-out-subtitle {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 20px;
-  }
+
   
   /* ========================
      Carousel
@@ -312,4 +308,141 @@
     color: #333;
   }
   
+  /* Header row with right-aligned link */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* bottom align */
+    margin-bottom: 12px;
+  }
+
+  .view-all {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1565c0;
+    text-decoration: none;
+    transition: color 0.2s;
+    margin-bottom: 2px; /* adjust for optical alignment */
+  }
  
+
+.view-all:hover {
+  color: #0d47a1;
+}
+
+/* .crushed {
+  margin: 28px 0;
+} */
+
+.crushed-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.crushed-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* keep left aligned */
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.crushed-label-top {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+  margin: 0 0 6px 0;
+}
+
+
+.crushed-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.crushed-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1565c0;
+  margin: 0;
+}
+
+.crushed-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Rooms list */
+.crushed-rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+
+/* Individual room card */
+.crushed-room-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-size: 14px;
+  color: #333;
+}
+
+.room-emoji {
+  font-size: 20px;
+}
+
+#iphone-16-pro .container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;        /* smooth iOS scrolling */
+  padding: 16px;
+  padding-bottom: calc(var(--nav-h) + 16px); /* avoid nav overlap */
+}
+
+/* Optional: tweak the sparkling line */
+.room-info p.sparkling {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #2e7d32;         /* slightly celebratory green */
+}
+
+/* Reuse your existing room-card and progress-bar styles */
+
+/* Always-visible green bar inside the Crushed section */
+.crushed-rooms .progress-bar.clean-bar {
+  width: 140px;
+  height: 6px;
+  background: #e8f5e9;
+  border-radius: 3px;
+  overflow: hidden;
+  display: block;
+}
+
+.crushed-rooms .progress-bar.clean-bar .progress-fill {
+  width: 100%;
+  height: 100%;
+  background: #4caf50;
+  border-radius: 3px;
+  display: block;
+  /* optional entrance animation */
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: barFill 400ms ease forwards;
+}
+
+
+.room-info { flex: 1; }  /* add this */
+
+/* .crushed-rooms .room-card .progress-bar.clean-bar { outline: 1px solid red; } */
