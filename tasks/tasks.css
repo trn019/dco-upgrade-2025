@@ -2553,3 +2553,71 @@ textarea::placeholder {
   #autoSanitizeModal .ring-center-btn.is-paused .icon-pause { display: none; }
   #autoSanitizeModal .ring-center-btn.is-paused .icon-play  { display: block; }
   
+
+  /* Collapsible room header row */
+.room-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .room-title { margin: 0; }
+  
+  .room-toggle {
+    background: transparent;        /* 👈 */
+    border: none;                   /* 👈 */
+    color: #666;
+    width: 28px; height: 28px;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: transform .15s ease, color .15s ease;
+  }
+  /* .room-toggle:hover { color: #111; transform: translateY(-1px); } */
+  /* .room-toggle:focus { outline: 2px solid #1976d2; outline-offset: 2px; } */
+  
+  /* Collapse behavior */
+  /* .room.is-collapsed .room-body { display: none; } */
+  
+  /* Smooth slide/opacity for the room content */
+  .room-body {
+    overflow: hidden;
+    max-height: none;
+    opacity: 1;
+    transition: max-height .25s ease, opacity .2s ease;
+  }
+
+
+.room.is-collapsed .room-body {
+    max-height: 0 !important;
+    opacity: 0;
+  }
+  
+  /* (Optional) disable motion for users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .room-body { transition: none; }
+  }
+  
+  /* Make the header button look “invisible” */
+.room-head{
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 6px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+  }
+  .room-head:focus { outline: 2px solid #1976d2; outline-offset: 2px; }
+  
+  /* Smooth collapse/expand */
+  .room-body{
+    overflow:hidden; transition:max-height .25s ease, opacity .2s ease;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .room-body{ transition:none; }
+  }
+  

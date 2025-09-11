@@ -40,6 +40,14 @@ const taskData = {
   }
 };
   
+// Persist collapsed state per day -> room
+const collapsedRoomsByDay = {};              // e.g. { 'thu-7': { kitchen: true } }
+const isCollapsed = (day, room) => !!collapsedRoomsByDay[day]?.[room];
+const setCollapsed = (day, room, val) => {
+  (collapsedRoomsByDay[day] ||= {})[room] = !!val;
+};
+
+
 
 const roomData = {
     bedroom: { emoji: "🛏️", tasks: 2 },
@@ -1084,13 +1092,60 @@ function daysAgoFromText(text) {
     roomsAZ.forEach(room => {
       const list = Array.isArray(dayTasks[room]) ? dayTasks[room] : [];
       const sorted = sortTasksInRoom(list);
-      html += `<section class="room">
-        <h2>${room.charAt(0).toUpperCase() + room.slice(1)}</h2>
-        ${sorted.map(renderTask).join('')}
-      </section>`;
+    
+      const pretty = room.charAt(0).toUpperCase() + room.slice(1);
+      const collapsed = isCollapsed(day, room);
+      const bodyId = `room-${day}-${room}`;
+    
+      html += `
+        <section class="room ${collapsed ? 'is-collapsed' : ''}" data-room="${room}">
+          <div class="room-row">
+            <h2 class="room-title">${pretty}</h2>
+            <button class="room-toggle"
+        type="button"
+        aria-expanded="${!collapsed}"
+        aria-controls="${bodyId}"
+        data-room="${room}"
+        aria-label="${collapsed ? 'Expand' : 'Collapse'}">
+  ${collapsed ? 'v' : '^'}
+</button>
+
+          </div>
+          <div class="room-body" id="${bodyId}" ${collapsed ? 'hidden' : ''}>
+            ${sorted.map(renderTask).join('')}
+          </div>
+        </section>`;
     });
+    
   
     tasksContainer.innerHTML = html || '<p style="text-align:center;color:#666;margin-top:40px;">No tasks scheduled for this day!</p>';
+
+    // after building each <section class="room ...">
+// if (collapsed) {
+//   // start collapsed
+//   // body already has hidden; keep it consistent
+// } else {
+//   const body = document.getElementById(bodyId);
+//   if (body) body.style.maxHeight = 'none';
+// }
+
+// Step 4: set initial styles so transitions behave
+const sections = tasksContainer.querySelectorAll('.room');
+sections.forEach(section => {
+  const body = section.querySelector('.room-body');
+  if (!body) return;
+
+  if (section.classList.contains('is-collapsed')) {
+    body.hidden = true;
+    body.style.maxHeight = '0px';
+    body.style.opacity = '0';
+  } else {
+    body.hidden = false;
+    body.style.maxHeight = 'none';
+    body.style.opacity = '1';
+  }
+});
+
   }
   
   
@@ -2154,6 +2209,57 @@ asShowReview();        // go straight to Review
 //     asShowReview();        // go straight to the Review page
 //   }
 // });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const pane = document.getElementById('tasks-for-day');
+  pane.addEventListener('click', (e) => {
+    const btn = e.target.closest('.room-toggle');
+    if (!btn) return;
+  
+    const section = btn.closest('.room');
+    const body = section.querySelector('.room-body');
+    const willCollapse = !section.classList.contains('is-collapsed');
+  
+    if (willCollapse) {
+      // COLLAPSE: animate down to 0, then hide
+      body.hidden = false; // ensure measurable
+      body.style.maxHeight = body.scrollHeight + 'px';
+      requestAnimationFrame(() => {
+        body.style.maxHeight = '0px';
+        body.style.opacity = '0';
+        section.classList.add('is-collapsed');
+      });
+      body.addEventListener('transitionend', function onEnd() {
+        body.hidden = true;                    // optional semantic hide
+        body.removeEventListener('transitionend', onEnd);
+      }, { once: true });
+    } else {
+      // EXPAND: remove collapsed class first, then grow to content height
+      body.hidden = false;
+      section.classList.remove('is-collapsed');  // <- key
+      body.style.maxHeight = '0px';              // reset to start
+      requestAnimationFrame(() => {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        body.style.opacity = '1';
+      });
+      body.addEventListener('transitionend', function onEnd() {
+        body.style.maxHeight = 'none';          // free height after expand
+        body.removeEventListener('transitionend', onEnd);
+      }, { once: true });
+    }
+  
+    // caret + aria
+    btn.setAttribute('aria-expanded', String(!willCollapse));
+    btn.setAttribute('aria-label', willCollapse ? 'Expand' : 'Collapse');
+    btn.textContent = willCollapse ? 'v' : '^';
+  
+    setCollapsed(currentDay, section.dataset.room, willCollapse);
+  });
+  
+
+  
+});
+
 
 function asStartTimer(totalSecs, mode = 'work', resumeRemaining = null) {
   if (!window.AS) window.AS = {};
