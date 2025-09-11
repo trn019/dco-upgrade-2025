@@ -8,7 +8,7 @@
   }
   
   .incoming-title {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     color: #333;
     margin: 0; /* reset so alignment works cleanly */
@@ -27,18 +27,16 @@
      Carousel
      ======================== */
  /* === Carousel sizing & layout (REPLACE this whole block) === */
-.task-carousel {
-    position: relative;
-    /* remove grid so the viewport spans full width */
-    display: block;
-    margin-bottom: 16px;
-  }
+ .task-carousel{
+  position: relative;
+  --card-w: calc(402px * 0.5);   /* half the device width */
+  --card-h: calc(var(--card-w) * 0.66); /* 2/3 of width */
+}
   
-  .carousel-viewport {
-    overflow: hidden;
-    border-radius: 12px;
-    width: 100%;
-  }
+.carousel-viewport{
+  position: relative;
+  overflow: visible; /* so arrows can sit outside the inner pod */
+}
   
   .carousel-track {
     display: flex;
@@ -46,33 +44,35 @@
     will-change: transform;
   }
   
-  /* Each slide is exactly one viewport wide */
-  .task-card {
-    flex: 0 0 100%;
-    width: 100%;
-    box-sizing: border-box;
-    background: white;
-    border-radius: 15px;
-    padding: 30px 20px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin: 0; /* important: no side margins */
-  }
+/* Slides must remain one viewport wide for JS math */
+.task-card{ flex: 0 0 100%; width: 100%; background: transparent; padding: 0; }
+
+.task-card-inner {
+  width: var(--card-w);
+  height: var(--card-h);
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;   /* push content to the bottom */
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,.1);
+}
+
+
   
   /* keep your arrows/dots as you had */
   
   
-  .task-title {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #333;
-  }
+
   
   .task-time {
     color: #888;
     font-size: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    color: #333;
   }
   
   /* ========================
@@ -119,51 +119,65 @@
   /* ========================
      Carousel Controls
      ======================== */
-  .carousel-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: 30px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.8);
-    color: #666;
-    font-size: 18px;
-    cursor: pointer;
-    z-index: 2;
+/* Arrows outside the card edges */
+.carousel-nav{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px; height: 34px;
+  /* border-radius: 50%; */
+  background: transparent;
+  /* box-shadow: 0 2px 6px rgba(0,0,0,.1); */
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;               /* ensure above card */
+  pointer-events: auto;
+  border: none;
+}
   
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.carousel-nav.prev{ left: calc(50% - var(--card-w)/2 - 50px); }
+.carousel-nav.next{ right: calc(50% - var(--card-w)/2 - 50px); }
   
-  .carousel-nav.prev {
-    left: 10px;
-  }
+.task-card-inner .btn {
+  width: 140px;          /* narrower so two fit comfortably */
+  padding: 8px 14px;     /* less padding for smaller height */
+  font-size: 12px;       /* smaller text */
+  border-radius: 20px;   /* keep pill look */
+}
+
+.task-card-inner .task-buttons {
+  gap: 6px;              /* tighter vertical spacing */
+  margin-bottom: 8px;
+}
+
+.carousel-dots{
+  display: flex;
+  justify-content: center;
+  align-items: center;   /* prevent vertical stretching */
+  gap: 8px;
+  padding: 6px 0;
+  height: auto;          /* ensure container isn't forcing height */
+}
+
   
-  .carousel-nav.next {
-    right: 10px;
-  }
-  
-  .carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 15px;
-  }
-  
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #f0f0f0;
-    cursor: pointer;
-  }
-  
-  .dot.active {
-    background: #666;
-  }
+.carousel-dots .dot{
+  appearance: none;      /* reset button styling */
+  -webkit-appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+
+  width: 8px;
+  height: 8px;
+  aspect-ratio: 1 / 1;   /* guarantees a perfect circle */
+  border-radius: 999px;
+  flex: 0 0 auto;        /* don't stretch in flex */
+  display: inline-block;
+  background: #e1e6ef;
+}
+
+.carousel-dots .dot.active{
+  background: #0b4a7a;
+}
   
   /* ========================
      Watch Out Section
@@ -320,7 +334,7 @@
     font-size: 14px;
     font-weight: 600;
     color: #1565c0;
-    text-decoration: none;
+    /* text-decoration: none; */
     transition: color 0.2s;
     margin-bottom: 2px; /* adjust for optical alignment */
   }
@@ -447,3 +461,153 @@
 
 /* .crushed-rooms .room-card .progress-bar.clean-bar { outline: 1px solid red; } */
 
+/* ====== Page background & spacing ====== */
+#iphone-16-pro .container{
+  background: linear-gradient(180deg,#f5fbff 0%, #f7f9fc 26%, #fafbfc 100%);
+  padding-top: 0; /* hero handles top padding */
+}
+
+/* ====== Hero header (blue rounded top band) ====== */
+.hero{
+  position: relative;
+  margin: -16px -16px 14px;        /* edge-to-edge inside the device frame */
+  padding: 22px 20px 28px;
+  background: #0b4a7a;             /* deep blue like mock */
+  color: #fff;
+  border-bottom-left-radius: 22px;
+  border-bottom-right-radius: 22px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  min-height: 90px;
+
+}
+
+.hero-title{
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+/* friendly “mascot” bubble (CSS-only placeholder) */
+/* .hero-mascot{
+  margin-left: auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #b3f0d7 0 40%, #8be0c1 41% 100%);
+  box-shadow: 0 6px 14px rgba(0,0,0,.15);
+  position: relative;
+}
+.hero-mascot::after{
+  content:"";
+  position:absolute;
+  right: 8px; bottom: -6px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #8be0c1;
+  box-shadow: 10px 6px 0 0 #8be0c1, 20px 12px 0 0 #8be0c1;
+  opacity: .85; 
+} */
+
+/* Keep your Dynamic Island above the hero */
+.device-island{ z-index: 1200; }
+
+/* ====== Carousel card: tight pill with soft shadow ====== */
+
+.task-title{
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0;
+
+}
+.task-time{ color:#2b6aa1; font-weight: 600; margin-bottom: 14px; }
+
+/* Buttons: rounded, iOS-ish blue */
+.btn{
+  width: 210px;
+  border-radius: 999px;
+  background:#0b4a7a;
+  font-weight: 700;
+}
+.btn.btn-complete{ background:#1669c1; }
+.btn.btn-focus-mode{ background:#0b4a7a; }
+
+/* Chevron buttons & dots already fine—slightly lighter */
+/* .carousel-nav{ background: rgba(255,255,255,.9); } */
+.dot{ background:#e1e6ef; }
+.dot.active{ background:#0b4a7a; }
+
+/* ====== “Let’s check on this room…” card ====== */
+#watchOut .section-title{ font-size: 22px; }
+#watchOut .view-all{ color:#0b4a7a; }
+
+.room-card{
+  border-radius: 16px;
+  padding: 12px;
+  gap: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+}
+
+.room-image{
+  width: 84px; height: 72px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffe7b0, #fff3d6);
+  font-size: 34px;
+}
+
+.room-info h5{
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+.room-info p{
+  color:#6a798a;
+  margin: 0 0 8px;
+}
+
+/* yellow progress like mock */
+.room-card .progress-bar{
+  width: 140px; height: 8px;
+  background: #fff4cf; border-radius: 999px;
+}
+.room-card .progress-fill{
+  background: #f4c647;
+  border-radius: 999px;
+}
+
+/* ====== “You crushed it this week” tiles ====== */
+#crushed .section-title{ font-size: 22px; }
+
+.crushed-card{
+  border: 1.5px solid #d8eafc;
+  box-shadow: none;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.crushed-label-top{ color:#5076a3; }
+.crushed-value{ color:#0b4a7a; }
+
+/* Sparkling list items */
+.crushed-room-card{
+  border: 1px solid #e7eef8;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.crushed-rooms .progress-bar.clean-bar{
+  background:#e7f3ea;
+}
+.crushed-rooms .progress-bar.clean-bar .progress-fill{
+  background:#37b24d;
+}
+
+/* ====== Section header link color ====== */
+.view-all{ color:#0b4a7a; }
+.view-all:hover{ color:#08395f; }
+
+/* ====== Active nav tint like mock ====== */
+nav a:first-child{ color:#0b4a7a; }
+nav a:first-child img{ opacity: 1; }
+
+.incoming-title { margin-top: 6px; }

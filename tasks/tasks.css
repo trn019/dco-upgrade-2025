@@ -6,6 +6,7 @@
     background: white;
     border-radius: 10px;
     padding: 5px;
+    margin-top: calc(var(--safe-top) + 6px);
 }
 
 .tab {
