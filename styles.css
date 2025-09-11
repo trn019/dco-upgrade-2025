@@ -20,14 +20,16 @@ body {
 
   #iphone-16-pro {
     width: 402px;
-    height: 874px;                 /* fixed demo height */
-    border: 16px solid black;
-    border-radius: 47px;
+    height: 874px;
+    border: 10px solid #000;       /* uniform bezel all around */
+    border-radius: 52px;           /* rounded corners like iPhone 16 Pro */
     position: relative;
-    background: white;
+    background: #fff;
     display: flex;
     flex-direction: column;
-    overflow: hidden;              /* keep frame mask; content scrolls in .container */
+    overflow: hidden;
+    box-shadow: 0 0 0 2px #111;    /* subtle edge */
+    transform: translateY(40px); /* pushes it down */
   }
 
   #iphone-16-pro nav {
@@ -45,6 +47,35 @@ body {
     border-radius: 0 0 47px 47px; /* optional, matches your frame */
   }
 
+/* Dynamic Island */
+.device-island {
+    position: absolute;
+    top: var(--island-top, 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--island-w, 126px);
+    height: var(--island-h, 36px);
+    background: #000;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+  }
+
+  .device-island .island-lens {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #222;
+    box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.25);
+  }
+
+
+
+
+  
+
 .nav-item {
     display: flex;
     flex-direction: column;
@@ -53,6 +84,20 @@ body {
     color: #666;
     font-size: 12px;
 }
+
+/* Home indicator bar (iOS style) */
+.device-home-indicator {
+    position: absolute;
+    bottom: var(--home-bottom, 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--home-w, 136px);
+    height: var(--home-h, 5px);
+    background: #000;
+    border-radius: 4px;
+    opacity: 0.6;
+    z-index: 50;
+  }
 
 .nav-item.active {
     color: #333;
