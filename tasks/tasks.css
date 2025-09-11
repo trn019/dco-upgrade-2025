@@ -2,58 +2,60 @@
 
 .tab-header {
     display: flex;
-    margin-bottom: 25px;
-    background: white;
-    border-radius: 10px;
-    padding: 5px;
-    margin-top: calc(var(--safe-top) + 6px);
-}
+    justify-content: space-around;
+    align-items: center;
+    background: #0b4a7a;         /* deep blue bar */
+    padding: 12px 0;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+  }
 
+/* Tab buttons */
 .tab {
     flex: 1;
-    padding: 12px;
     text-align: center;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #666;
-    font-weight: 500;
-    transition: all 0.3s;
-    cursor: pointer;
+    background: transparent;
     border: none;
-    background: none;
-}
-
-.tab.active {
-    background: #f0f0f0;
-    color: #333;
-    text-decoration: underline;
     font-weight: 600;
-}
+    font-size: 16px;
+    color: #fff;
+    cursor: pointer;
+    padding-top: 50px;  /* space for island */
+  }
+
+
+  .tab.active {
+    text-decoration: underline;
+    font-weight: 700;
+  }
 
 /* Default collapsed: row of 7 days + expand button aligned right */
 .day-selector {
-    display: flex;
-    align-items: flex-start;   /* top-align when grid has multiple rows */
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 25px;
+    position: relative;  /* anchor expand button */
+    background: #fff;
+    border: 1px solid #dfe6ee;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    padding: 36px 10px 12px;  /* leave space at top for the button */
+    margin: 0 0 14px;
+    box-shadow: 0 1px 0 rgba(0,0,0,.02);
   }
 
-  .day-selector .days-wrapper {
-    flex: 1;  /* take all available space left of the button */
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+
+
+  .day-selector.collapsed .days-wrapper{
+    grid-auto-rows: 48px;    /* pill height */
   }
 
-  .day-selector.collapsed .days-wrapper {
-    grid-template-rows: 1fr;
+  /* Expanded: 3 rows (3 weeks) of 7 */
+.day-selector.expanded .days-wrapper{
+    grid-auto-rows: 48px;
   }
   
 /* Expanded: 3 rows of 7 days, expand button aligned to the right below */
 .day-selector.expanded {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    display: block !important;
+    grid-template-columns: none !important;
     gap: 6px;
     margin-bottom: 25px;
     position: relative; /* anchor expand button */
@@ -66,51 +68,59 @@
     margin-top: 8px;       /* space from the days */
   }
 
-.day-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 4px 2px;
-    border-radius: 12px;
-    background: white;
-    min-width: 32px;
-    cursor: pointer;
-    transition: all 0.3s;
-    flex: 1;
-    max-width: 40px;
-}
+/* Each day item as a circle/pill */
+.day-item{
+    display:grid;
+    place-items:center;
+    border-radius:24px;
+    background:#f6f8fb;
+    color:#2b3b4e;
+    user-select:none;
+    cursor:pointer;
+    transition: background .2s, color .2s, box-shadow .2s;
+    border:1px solid #e7eef6;
+  }
 
-.day-item.active {
-    background: #1976d2;
-    color: white;
-}
+/* Active day = filled blue circle */
+/* Selected day */
+.day-item.active{
+    background:#0b4a7a;
+    color:#fff;
+    border-color:#0b4a7a;
+  }
 
-.day-abbr {
-    font-size: 9px;
-    font-weight: 600;
-    margin: 0;
-    line-height: 1.1;
-}
+  .day-item .day-abbr{
+    margin:0;
+    line-height:1.05;
+    font-weight:700;
+    letter-spacing:.2px;
+  }
 
 /* Style tweak for the expand/collapse button itself */
 /* Expand/collapse button stays on the right, same spot always */
 .expand-icon {
-    background: #e0e0e0;
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0b4a7a;
+    color: #fff;
     border: none;
-    border-radius: 6px;
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
     cursor: pointer;
-    font-size: 12px;
-    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
   }
+  
+  .day-selector.collapsed .expand-icon::before { content: "☰"; } /* menu icon */
+  .day-selector.expanded  .expand-icon::before { content: "×"; } /* close icon */
+  
 
-.expand-icon::before {
-    content: "↕";
-}
+  .day-selector.collapsed .expand-icon::before{ content:"☰"; }  /* collapsed → show “expand” */
+  .day-selector.expanded  .expand-icon::before{ content:"×"; }  /* expanded → show “close” */
 
 .auto-sanitize {
     background: white;
@@ -122,6 +132,8 @@
     align-items: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
+.auto-sanitize{ margin-top: 4px; }
 
 .auto-sanitize p {
     flex: 1;
@@ -214,12 +226,19 @@
 }
 
 .task-item {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
+    background: #fff;
+    /* border-radius: 12px; */
+    /* border: 1px solid #eee; */
+    box-shadow: none;
+  
+    /* shrink width */
+    width: 90%;            /* take up less than full screen */
+    max-width: 340px;      /* cap for larger devices */
+    margin: 6px auto;      /* center horizontally with tighter gap */
+  
+    /* shrink height */
+    /* padding: 10px 12px; */
+  }
 
 .task-header {
     display: flex;
@@ -2835,3 +2854,289 @@ textarea::placeholder {
 
 /* (optional) prevent tray open on one-time */
 .task-item.one-time .task-actions { display: none !important; }
+
+.task-item {
+    margin-bottom: 6px;   /* smaller gap (was ~10–15px) */
+  }
+  
+  .room {
+    margin-bottom: 14px;  /* shrink section spacing if needed */
+  }
+  
+  .task-info, .task-frequency {
+    margin-bottom: 6px;   /* reduce inner spacing for compactness */
+  }
+  
+
+  /* Days wrapper is always a grid of 7 columns */
+  .day-selector .days-wrapper {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  
+    /* make it stretch full width */
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  
+  /* Collapsed view: just 1 row of 7 */
+  .day-selector.collapsed .days-wrapper {
+    grid-auto-rows: 56px; /* each pill has consistent height */
+  }
+  
+  /* Expanded view: 3 rows of 7 (21 days) */
+  .day-selector.expanded .days-wrapper {
+    grid-auto-rows: 56px; 
+  }
+  
+  /* Day items */
+  .day-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  
+    background: #f2f2f2;
+    border-radius: 16px;
+    cursor: pointer;
+  
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.1;
+    padding: 4px 0;
+    user-select: none;
+  }
+  
+  /* Active day pill */
+  .day-item.active {
+    background: #0b4a7a;
+    color: #fff;
+  }
+  
+  /* Two-line label styling */
+  .day-item .day-abbr:first-child {
+    font-size: 11px; /* weekday (MON, TUE…) */
+    opacity: 0.8;
+  }
+  .day-item .day-abbr:last-child {
+    font-size: 14px; /* number (7, 8, 9…) */
+    font-weight: 700;
+  }
+
+  /* ---- Layout vars ---- */
+.day-selector{
+    --chip-h: 56px;             /* day pill height */
+    --gap: 8px;                 /* grid gap */
+    --expand-size: 28px;        /* button size */
+    --expand-gap: 10px;         /* space between grid and button */
+    position: relative;
+  }
+  
+  /* Keep the grid from running under the expand button */
+  .day-selector .days-wrapper{
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--gap);
+    grid-auto-rows: var(--chip-h);
+    /* reserve space on the right for the button */
+    padding-right: calc(var(--expand-size) + var(--expand-gap));
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Collapsed: single week row (visual) */
+ 
+  
+  /* Expanded: 3-week view stays full-width but still leaves room for the button */
+
+  
+  /* Day chip */
+  .day-item{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#f2f2f2; border-radius:16px; cursor:pointer;
+    font-size:13px; font-weight:600; line-height:1.1; padding:4px 0;
+    min-width:0; max-width:none;   /* avoid squish caps */
+    border:1px solid #e7eef6;
+  }
+  .day-item.active{ background:#0b4a7a; color:#fff; border-color:#0b4a7a; }
+  .day-item .day-abbr{ margin:0; }
+  .day-item .day-abbr:first-child{ font-size:11px; opacity:.85; }
+  .day-item .day-abbr:last-child { font-size:14px; font-weight:700; }
+  
+  /* Expand button */
+  .expand-icon{
+    position: absolute;
+    right: 8px;
+    top: calc(
+      var(--pad-top) + (var(--chip-h) - var(--expand-size)) / 2
+    );                                              /* center on top row */
+    width: var(--expand-size);
+    height: var(--expand-size);
+    border-radius: 50%;
+    background: #0b4a7a;
+    color: #fff;
+    border: none;
+    display: grid; place-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    z-index: 1;
+  }
+  /* Collapsed: align vertically with the single week row */
+  .day-selector.collapsed .expand-icon{
+    top: calc(var(--chip-h) / 2);
+    transform: translateY(-50%);
+  }
+  .day-selector.collapsed .expand-icon::before{ content:"☰"; }
+  
+  /* Expanded: pin to top-right, aligned with top row */
+  .day-selector.expanded .expand-icon{
+    top: 6px;                   /* aligns to the top row, tweak if needed */
+    transform: none;
+  }
+  .day-selector.expanded .expand-icon::before{ content:"×"; }
+
+  /* Auto-Sanitize: flat, compact card (no mascot) */
+.auto-sanitize{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px 14px;
+    margin:8px 0 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    box-shadow:none;   /* no float */
+  }
+  
+  .auto-sanitize p{
+    margin:0;
+    font-size:13px;
+    color:#333;
+    line-height:1.35;
+  }
+  
+  /* Smaller shuffle button to match compact cards */
+  .auto-sanitize .shuffle-btn{
+    width:40px;
+    height:40px;
+    font-size:16px;
+  }
+
+  /* Center grid items and shrink card width */
+.rooms-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr); /* keep 2 columns */
+    gap:10px;
+    place-items:center;                    /* center each card cell */
+  }
+  
+  /* Narrow, flat room cards */
+  .room-card{
+    width:75%;               /* narrower than the cell */
+    max-width:160px;         /* cap width so they stay small */
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px;
+    box-shadow:none;         /* no float */
+  }
+  
+  /* Keep “Add Room” visually consistent */
+  .room-card.add-room-card{
+    width:75%;
+    max-width:160px;
+    background:#fafafa;
+    border:1px dashed #cfcfcf;
+  }
+  
+  /* Tighter typography inside the small cards */
+  .room-name{ font-size:13px; font-weight:700; margin:0; }
+  .room-status{ font-size:10px; color:#666; margin:2px 0 0; }
+  .task-count{ font-size:18px; font-weight:800; }
+  .task-label{ font-size:11px; color:#666; }
+  .room-header{ margin-bottom:8px; }
+  .room-bottom{ gap:4px; }
+  
+  /* Status dot sizes scale with smaller cards */
+  .status-indicator{ width:8px; height:8px; }
+  
+
+  /* ----- ROOMS TAB — authoritative overrides ----- */
+
+/* Make sure the grid is actually a grid when Rooms tab is active */
+#rooms-content.active .rooms-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    justify-items: center;   /* center each card in its cell */
+    align-items: start;
+    padding: 0 8px;
+  }
+  
+  /* Narrow, flat room cards */
+  #rooms-content .room-card {
+    width: 78% !important;          /* narrower than the cell */
+    max-width: 160px !important;
+    background: #fff !important;
+    border: 1px solid #eee !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    box-shadow: none !important;     /* remove any floating/shadow look */
+  }
+  
+  /* Keep “Add Room” visually consistent */
+  #rooms-content .room-card.add-room-card {
+    background: #fafafa !important;
+    border: 1px dashed #cfcfcf !important;
+  }
+  
+  /* Tighter inner typography for small cards */
+  #rooms-content .room-header { margin-bottom: 8px !important; }
+  #rooms-content .room-name   { font-size: 13px !important; font-weight: 700 !important; margin: 0 !important; }
+  #rooms-content .room-status { font-size: 10px !important; color: #666 !important; margin: 2px 0 0 !important; }
+  #rooms-content .task-count  { font-size: 18px !important; font-weight: 800 !important; }
+  #rooms-content .task-label  { font-size: 11px !important; color: #666 !important; }
+  #rooms-content .status-indicator { width: 8px !important; height: 8px !important; }
+  
+  /* Make Rooms' "Auto-Sanitize" bar match Tasks-by-Day */
+#rooms-content .shuffle-section{
+    background:#fff;
+    border:1px solid #eee;
+    border-radius:12px;
+    padding:12px 14px;
+    margin:8px 8px 12px;   /* slight side padding to match cards */
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    box-shadow:none;       /* flat, no float */
+  }
+  
+  #rooms-content .shuffle-section p{
+    margin:0;
+    font-size:13px;
+    color:#333;
+    line-height:1.35;
+  }
+  
+  #rooms-content .shuffle-section .shuffle-btn {
+    flex: 0 0 auto;            /* don’t let flexbox stretch/squash it */
+    width: 44px;               /* equal width and height */
+    height: 44px;
+    border-radius: 50%;        /* ensures circle */
+    padding: 0;                /* remove extra space that can distort */
+    margin: 0;                 /* optional: reset margins */
+    box-sizing: border-box;    /* borders included in size */
+    background: #4db6ac;
+    color: #fff;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #rooms-content .shuffle-section .shuffle-btn::before{ content:"🎲"; }
+  
