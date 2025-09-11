@@ -1994,3 +1994,488 @@ textarea::placeholder {
 #recurringTaskModal .modal-page[data-page="2"] .form-actions .btn-save {
     width: auto;
   }
+
+
+  /* ===========================
+   AUTO-SANITIZE (modal--page)
+   =========================== */
+
+/* Scope everything to the modal to avoid leaks */
+#autoSanitizeModal .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  /* Each page fills the modal and scrolls its body */
+  #autoSanitizeModal .modal-page {
+    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+  }
+  #autoSanitizeModal .modal-page.is-active {
+    display: flex;
+  }
+  #autoSanitizeModal .modal-page-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: env(safe-area-inset-bottom, 14px);
+  }
+  
+  /* Shared card look */
+  #autoSanitizeModal .card {
+    background: #fff;
+    border: 1px solid #e6edf2;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+  
+  /* Section wrapper (matches your .card-section tone) */
+  #autoSanitizeModal .as-section {
+    background: #f5fbff;
+    border: 1px solid #e6edf2;
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 20px;
+  }
+  #autoSanitizeModal .as-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0c4a7a;
+  }
+  #autoSanitizeModal .muted {
+    color: #6c7a89;
+    font-size: 13px;
+  }
+  
+  /* ---------- START PAGE ---------- */
+  #autoSanitizeModal [data-page="start"] .as-hero {
+    margin: 16px 20px 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+  }
+  #autoSanitizeModal #asTaskTitle {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0b3d5c;
+  }
+  #autoSanitizeModal #asTaskMeta {
+    grid-column: 1 / -1;
+    margin: 2px 0 0;
+  }
+  
+  #autoSanitizeModal .as-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 16px 20px;
+  }
+  #autoSanitizeModal .btn-primary {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .2s;
+    box-shadow: 0 4px 12px rgba(25,118,210,.18);
+  }
+  #autoSanitizeModal .btn-primary:hover { background:#1565c0; transform: translateY(-1px); }
+  
+  #autoSanitizeModal .btn-secondary {
+    background: #e9eef3;
+    color: #0b3d5c;
+    border: none;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .2s;
+  }
+  #autoSanitizeModal .btn-secondary:hover { background:#dfe6ee; transform: translateY(-1px); }
+  
+  #autoSanitizeModal .btn-plain {
+    background: #fff;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  #autoSanitizeModal #asNoThanksBtn { width: calc(100% - 40px); margin: 0 20px 12px; }
+  
+  /* ---------- TIME PICKER PAGE ---------- */
+  #autoSanitizeModal [data-page="time"] .as-title { margin: 16px 20px 10px; }
+  
+  #autoSanitizeModal .time-picker.trio {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 8px 20px 0;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(0,150,136,0.12);
+  }
+  #autoSanitizeModal .time-picker.trio::after {
+    content: "";
+    position: absolute;
+    left: 10px; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    height: 40px; border-radius: 10px;
+    background: rgba(0,150,136,0.25);
+    pointer-events: none;
+  }
+  #autoSanitizeModal .time-picker .picker-scroll {
+    height: 180px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: y proximity;
+    border: 1px solid #e0e6ea;
+    border-radius: 8px;
+    background: #fff;
+  }
+  #autoSanitizeModal .time-picker .picker-list { padding: 40px 0; }
+  #autoSanitizeModal .time-picker .picker-item {
+    height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 500; color: #222;
+    scroll-snap-align: center;
+    cursor: pointer;
+  }
+  #autoSanitizeModal .time-picker .picker-item.selected { color:#0b3d5c; font-weight:700; }
+  
+  #autoSanitizeModal [data-page="time"] .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  #autoSanitizeModal #asTimeCancel { background:#e0e0e0; color:#333; border-radius:12px; }
+  #autoSanitizeModal #asTimeConfirm { composes: btn-primary; } /* if your build supports it */
+  #autoSanitizeModal #asTimeConfirm { background:#1976d2; color:#fff; border-radius:12px; }
+  
+  /* ---------- TIMER PAGE ---------- */
+  #autoSanitizeModal [data-page="timer"] .modal-page-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    gap: 12px;
+  }
+  #autoSanitizeModal #asRunningTask {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0b3d5c;
+    text-align: center;
+  }
+  #autoSanitizeModal #asCountdown {
+    font-variant-numeric: tabular-nums;
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #111;
+    margin: 6px 0 12px;
+  }
+  
+  #autoSanitizeModal .as-timer-controls {
+    /* display: flex; */
+    gap: 0px;
+    justify-content: center;
+  }
+  #autoSanitizeModal #asPauseBtn {
+    background:#e9eef3; color:#0b3d5c; border:none;
+    padding:12px 16px; border-radius:12px; font-weight:600; cursor:pointer;
+  }
+  #autoSanitizeModal #asResetBtn {
+    background:#fff; color:#333; border:1px solid #e0e0e0;
+    padding:12px 16px; border-radius:12px; font-weight:600; cursor:pointer;
+  }
+  #autoSanitizeModal #asFinishBtn {
+    background:#1976d2; color:#fff; border:none;
+    padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer;
+    box-shadow: 0 4px 12px rgba(25,118,210,.18);
+  }
+  
+  /* ---------- DONE PAGE ---------- */
+  #autoSanitizeModal [data-page="done"] .modal-page-body {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 32px 20px;
+  }
+  #autoSanitizeModal [data-page="done"] h2 {
+    font-size: 24px; margin: 0 0 6px; color: #0b3d5c;
+  }
+  #autoSanitizeModal [data-page="done"] p { margin: 0 0 18px; color:#555; }
+  #autoSanitizeModal [data-page="done"] .form-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    width: calc(100% - 40px); margin: 0 20px 10px;
+  }
+  #autoSanitizeModal #asAnotherBtn { background:#1976d2; color:#fff; border:none; border-radius:12px; padding:14px 16px; font-weight:700; }
+  #autoSanitizeModal #asCloseToTasksBtn { background:#fff; color:#333; border:1px solid #e0e0e0; border-radius:12px; padding:14px 16px; }
+  
+  /* ---------- OVERDUE RESCHEDULER ---------- */
+  #autoSanitizeModal [data-page="resched"] .modal-page-body {
+    padding: 12px 0 20px;
+  }
+  #autoSanitizeModal [data-page="resched"] .section-title {
+    margin: 8px 20px 10px; font-size: 18px; font-weight: 700; color:#0c4a7a;
+  }
+  
+  #autoSanitizeModal .overdue-list { display: grid; gap: 10px; padding: 0 20px; }
+  #autoSanitizeModal .overdue-item {
+    background:#fff; border:1px solid #e6edf2; border-radius:12px; overflow:hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+  }
+  #autoSanitizeModal .overdue-head {
+    width:100%; display:grid; grid-template-columns: 1fr auto; gap:10px;
+    align-items:center; padding:14px 14px; background:#fff; border:none; cursor:pointer;
+    text-align:left; font-size:15px; color:#0b3d5c; font-weight:600;
+  }
+  #autoSanitizeModal .overdue-head::after {
+    content:'›'; transform: rotate(90deg); opacity:.6; transition: transform .2s;
+  }
+  #autoSanitizeModal .overdue-head[aria-expanded="true"]::after { transform: rotate(-90deg); }
+  
+  #autoSanitizeModal .overdue-head .muted { font-weight: 500; }
+  #autoSanitizeModal .overdue-body {
+    padding: 12px 14px 16px; background:#f8fbfe; border-top:1px solid #e6edf2;
+  }
+  #autoSanitizeModal .overdue-body .date-grid {
+    margin: 6px 0 10px; grid-template-columns: 1.2fr 1fr 1fr;
+  }
+  #autoSanitizeModal .overdue-body .row.row-nav {
+    background:#fff; border:1px solid #e0e6ea; border-radius:10px; padding: 10px 12px;
+  }
+  
+  /* Footer for Rescheduler */
+  #autoSanitizeModal [data-page="resched"] .form-actions {
+    position: sticky; bottom: 0; background:#fff; border-top:1px solid #eee;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+  }
+  #autoSanitizeModal #asReschedDone {
+    background:#1976d2; color:#fff; border:none; border-radius:12px; padding:14px 16px; width:100%;
+    font-weight:700;
+  }
+  
+  /* ---------- Focus rings / a11y ---------- */
+  #autoSanitizeModal button:focus,
+  #autoSanitizeModal .picker-item:focus,
+  #autoSanitizeModal select:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  
+  /* Small screens polish */
+  @media (max-width: 380px) {
+    #autoSanitizeModal .as-actions { grid-template-columns: 1fr; }
+    #autoSanitizeModal [data-page="done"] .form-actions { grid-template-columns: 1fr; }
+  }
+  
+/* ===== Mini popup inside Auto-Sanitize ===== */
+#autoSanitizeModal .mini-modal[hidden] { display: none; }
+#autoSanitizeModal .mini-modal {
+  position: absolute; inset: 0; z-index: 5;   /* sits above modal content */
+  display: grid; place-items: center;
+}
+#autoSanitizeModal .mini-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.35);
+}
+#autoSanitizeModal .mini-sheet {
+  position: relative; z-index: 1;
+  width: 90%; max-width: 360px;
+  background: #fff; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0,0,0,.25);
+  display: flex; flex-direction: column;
+}
+#autoSanitizeModal .mini-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid #eef2f6;
+}
+#autoSanitizeModal .mini-header h3 {
+  margin: 0; font-size: 16px; font-weight: 700; color:#0b3d5c;
+}
+#autoSanitizeModal .mini-close {
+  background: none; border: none; font-size: 22px; line-height: 1; cursor: pointer; color:#666;
+}
+#autoSanitizeModal .mini-body { padding: 12px; }
+#autoSanitizeModal .mini-footer {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 12px; border-top: 1px solid #eef2f6;
+}
+
+/* Reuse your trio picker look inside popup */
+#autoSanitizeModal .mini-body .time-picker.trio {
+  margin: 0; padding: 10px; border-radius: 12px;
+  background: rgba(0,150,136,0.12);
+}
+#autoSanitizeModal .mini-body .picker-scroll { height: 180px; border: 1px solid #e0e6ea; border-radius: 8px; background:#fff; }
+#autoSanitizeModal .mini-body .picker-list { padding: 40px 0; }
+#autoSanitizeModal .mini-body .picker-item { height: 40px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:500; cursor:pointer; }
+#autoSanitizeModal .mini-body .picker-item.selected { color:#0b3d5c; font-weight:700; }
+
+/* Review page center layout */
+#autoSanitizeModal [data-page="review"] .modal-page-body {
+    flex: 1 1 auto;             /* scroller takes the rest */
+    min-height: 0;              /* allow it to shrink */
+    overflow-y: auto;
+  }
+  
+  /* Big timer text */
+  #autoSanitizeModal .review-amount {
+    font-variant-numeric: tabular-nums;
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #0b3d5c;
+  }
+  
+  #autoSanitizeModal [data-page="review"] .form-actions {
+    display: flex !important;   /* force visible */
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
+    z-index: 1;                 /* sit above page body */
+  }
+  
+  /* Make the REVIEW page body smaller/denser */
+#autoSanitizeModal [data-page="review"] .modal-page-body {
+    flex: 0 0 auto;          /* don't stretch to full height */
+    min-height: auto;
+    padding: 12px 16px;      /* was ~24px 20px */
+    gap: 8px;                /* was 12px */
+  }
+  
+  /* Slightly smaller time text + buttons */
+  #autoSanitizeModal [data-page="review"] .review-amount { font-size: 36px; }  /* was 48px */
+  #autoSanitizeModal [data-page="review"] .btn-secondary { padding: 10px 14px; font-size: 14px; }
+  
+  /* Keep footer compact but visible */
+  #autoSanitizeModal [data-page="review"] .form-actions {
+    display: flex !important;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+  }
+
+  /* --- Fix Auto-Sanitize Review layout so footer is visible --- */
+#autoSanitizeModal .modal-content,
+#autoSanitizeModal .modal-page { min-height: 0; }  /* allow flex children to shrink */
+
+#autoSanitizeModal [data-page="review"] {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Shrink the body to its content (not full height) */
+#autoSanitizeModal [data-page="review"] .modal-page-body {
+  flex: 0 0 auto;         /* was flex: 1 */
+  min-height: auto;
+  padding: 12px 16px;     /* a little tighter */
+  gap: 8px;
+}
+
+/* Keep the Begin footer visible & pinned */
+#autoSanitizeModal [data-page="review"] .form-actions {
+  display: flex !important;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid #eee;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0));
+  z-index: 1;
+}
+
+/* Optional: if content can get tall on short screens, cap body height and scroll it */
+@media (max-height: 700px) {
+  #autoSanitizeModal [data-page="review"] .modal-page-body {
+    max-height: calc(100% - 64px);  /* reserve ~footer height */
+    overflow-y: auto;
+  }
+}
+
+#autoSanitizeModal .modal-page:not(.is-active) {
+    display: none !important;
+  }
+
+  /* Take-a-break button under the timer */
+#autoSanitizeModal .timer-break-btn {
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    margin-top: 2px;
+  }
+  #autoSanitizeModal .timer-break-btn:hover { background: rgba(25,118,210,0.08); }
+  #autoSanitizeModal .timer-break-btn:focus { outline: 2px solid #1976d2; outline-offset: 2px; }
+  
+  /* Space the controls a touch lower now that break sits beneath the timer */
+  #autoSanitizeModal .as-timer-controls { margin-top: 8px; }
+  
+  /* Circular timer */
+#autoSanitizeModal .timer-ring {
+    width: min(70vw, 240px);
+    height: min(70vw, 240px);
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin: 8px auto 6px;
+  }
+  
+  #autoSanitizeModal .ring-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* start at 12 o'clock */
+  }
+  
+  #autoSanitizeModal .ring-bg {
+    fill: none;
+    stroke: #e9eef3;
+    stroke-width: 12;
+  }
+  
+  #autoSanitizeModal .ring-fg {
+    fill: none;
+    stroke: #1976d2;              /* work color (updated in JS for break) */
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke .2s ease;
+    stroke-dasharray: 0 1;        /* set in JS */
+    stroke-dashoffset: 0;         /* set in JS */
+  }
+  
+  #autoSanitizeModal .ring-label {
+    position: absolute;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(24px, 8vw, 34px);
+    font-weight: 800;
+    color: #0b3d5c;
+    line-height: 1;
+    pointer-events: none;
+  }
+  

@@ -17,36 +17,36 @@
 
         <!-- Tasks By Day Content -->
         <div class="tab-content active" id="tasks-content">
-            <div class="day-selector">
-                <div class="day-item active" data-day="thu">
+            <div class="day-selector collapsed">
+                <div class="day-item active" data-day="thu-7">
                     <p class="day-abbr">THU</p>
-                    <p class="day-abbr">14</p>
+                    <p class="day-abbr">7</p>
                 </div>
-                <div class="day-item" data-day="fri">
+                <div class="day-item" data-day="fri-8">
                     <p class="day-abbr">FRI</p>
-                    <p class="day-abbr">15</p>
+                    <p class="day-abbr">8</p>
                 </div>
-                <div class="day-item" data-day="sat">
+                <div class="day-item" data-day="sat-9">
                     <p class="day-abbr">SAT</p>
-                    <p class="day-abbr">16</p>
+                    <p class="day-abbr">9</p>
                 </div>
-                <div class="day-item" data-day="sun">
+                <div class="day-item" data-day="sun-10">
                     <p class="day-abbr">SUN</p>
-                    <p class="day-abbr">17</p>
+                    <p class="day-abbr">10</p>
                 </div>
-                <div class="day-item" data-day="mon">
+                <div class="day-item" data-day="mon-11">
                     <p class="day-abbr">MON</p>
-                    <p class="day-abbr">18</p>
+                    <p class="day-abbr">11</p>
                 </div>
-                <div class="day-item" data-day="tue">
+                <div class="day-item" data-day="tue-12">
                     <p class="day-abbr">TUE</p>
-                    <p class="day-abbr">19</p>
+                    <p class="day-abbr">12</p>
                 </div>
-                <div class="day-item" data-day="wed">
+                <div class="day-item" data-day="wed-13">
                     <p class="day-abbr">WED</p>
-                    <p class="day-abbr">20</p>
+                    <p class="day-abbr">13</p>
                 </div>
-                <button class="expand-icon"></button>
+                <button class="expand-icon" type="button" aria-label="Expand/collapse"></button>
             </div>
 
             <div class="auto-sanitize">
@@ -582,10 +582,138 @@
       </label>
     </div>
   </div>
+
+
   
 
         </div>
       </div>
+
+      <!-- AUTO-SANITIZE MODAL -->
+<div id="autoSanitizeModal" class="modal modal--page" style="display:none;">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="asTitle">
+      <div class="modal-header">
+        <button class="back-btn" id="asBackBtn">‹</button>
+        <h2 id="asTitle">Auto-Sanitize</h2>
+        <span class="close-modal" id="asCloseBtn">×</span>
+      </div>
+  
+      <!-- PAGE: Start (show low-effort task, Begin / No thanks) -->
+      <div class="modal-page is-active" data-page="start">
+        <div class="modal-page-body">
+          <p class="muted">Here’s a quick win:</p>
+          <h3 id="asTaskTitle">Low-effort task</h3>
+          <p id="asTaskMeta" class="muted"></p>
+      
+          <div class="as-actions" style="grid-template-columns: 1fr;">
+            <button id="asBeginBtn" class="btn-primary">Begin</button>
+          </div>
+      
+          <button id="asNoThanksBtn" class="btn-plain">No thanks</button>
+        </div>
+      </div>
+      
+      
+      
+  
+      <!-- PAGE: Time Picker (trio slider H:M:S) -->
+      <!-- PAGE: Review (centered time + Edit timer, Begin in footer) -->
+      <div class="modal-page" data-page="review">
+        <div class="modal-page-body">
+          <div id="asReviewDuration" class="review-amount">30:00</div>
+          <button id="asReviewEdit" class="btn-secondary">Edit timer</button>
+        </div>
+      
+        <!-- Sticky footer with Begin -->
+        <div class="form-actions" id="asReviewFooter">
+          <button id="asReviewBegin" class="btn-primary">Begin</button>
+        </div>
+      </div>
+      
+      
+
+  
+      <div id="asTimePopup" class="mini-modal" hidden aria-hidden="true">
+        <div class="mini-backdrop"></div>
+        <div class="mini-sheet" role="dialog" aria-modal="true" aria-labelledby="asPopupTitle">
+          <div class="mini-header">
+            <h3 id="asPopupTitle">Edit timer</h3>
+            <button id="asTimePopupClose" class="mini-close" aria-label="Close">×</button>
+          </div>
+      
+          <div class="mini-body">
+            <div class="time-picker trio" aria-label="Timer length">
+              <div class="picker-scroll" id="asPHourScroll"><div class="picker-list" id="asPHourList"></div></div>
+              <div class="picker-scroll" id="asPMinuteScroll"><div class="picker-list" id="asPMinuteList"></div></div>
+              <div class="picker-scroll" id="asPSecondScroll"><div class="picker-list" id="asPSecondList"></div></div>
+            </div>
+          </div>
+      
+          <div class="mini-footer">
+            <button id="asTimePopupCancel" class="btn-secondary">Cancel</button>
+            <button id="asTimePopupSave" class="btn-primary">Save</button>
+          </div>
+        </div>
+      </div>
+      
+  
+      <!-- PAGE: Timer running -->
+      <!-- PAGE: Timer -->
+<!-- PAGE: Timer -->
+<div class="modal-page" data-page="timer">
+    <div class="modal-page-body">
+      <!-- <h3 id="asRunningTask">Task name</h3> -->
+      <!-- Big circular timer -->
+<div class="timer-ring" aria-label="Time remaining">
+    <svg viewBox="0 0 120 120" class="ring-svg">
+      <!-- background track -->
+      <circle class="ring-bg" cx="60" cy="60" r="54"></circle>
+      <!-- foreground progress (we animate its dash offset) -->
+      <circle class="ring-fg" cx="60" cy="60" r="54"></circle>
+    </svg>
+    <div id="asCountdown" class="ring-label">30:00</div>
+  </div>
+  
+  
+      <!-- Take a break under the timer -->
+      <button id="asBreakBtn" class="timer-break-btn">Take a break</button>
+  
+      <div class="as-timer-controls">
+        <!-- (Optional) Reset can be commented out -->
+        <!-- <button id="asResetBtn" class="btn-plain">Reset</button> -->
+        <button id="asFinishBtn" class="btn-primary">I finished!</button>
+      </div>
+    </div>
+  </div>
+  
+  
+      
+  
+      <!-- PAGE: Nice work -->
+      <div class="modal-page" data-page="done">
+        <div class="modal-page-body" style="text-align:center;">
+          <h2>Nice work! 🎉</h2>
+          <p>Want another quick win?</p>
+          <div class="form-actions" style="justify-content:center;">
+            <button id="asAnotherBtn" class="btn-save">Give me another</button>
+            <button id="asCloseToTasksBtn" class="btn-save" style="background:#fff;color:#333;border:1px solid #ddd;">Back to tasks</button>
+          </div>
+        </div>
+      </div>
+  
+      <!-- PAGE: Overdue Rescheduler -->
+      <div class="modal-page" data-page="resched">
+        <div class="modal-page-body">
+          <h3 class="section-title">Reschedule overdue</h3>
+          <div id="asOverdueList" class="overdue-list"></div>
+        </div>
+        <div class="form-actions">
+          <button id="asReschedDone" class="btn-save">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 
             <nav>
                 <a href="../index.html">

@@ -72,6 +72,18 @@ let selectedUnit = 'days'; // Default to days
 let selectedRepeat = 'On Monday';
 let selectedTime = 'Time';
 
+// place this at the VERY top of tasks.js (before DOMContentLoaded, before updateTasksForDay)
+(function preselectTab() {
+  const paramTab = new URLSearchParams(location.search).get('tab');
+  const hashTab = location.hash ? location.hash.slice(1) : '';
+  const initialTab = (paramTab === 'rooms' || hashTab === 'rooms') ? 'rooms' : 'tasks';
+
+  // Apply classes right away so the browser never shows the wrong tab
+  document.addEventListener('DOMContentLoaded', () => {
+    activateTab(initialTab);
+  });
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- Tabs ---
   document.querySelectorAll('.tab').forEach(tab => {
@@ -90,16 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Day selector ---
   renderDaySelector();  // ⬅️ builds Thu 7.., sets currentDay, calls updateTasksForDay()
-
-  const daySelector = document.querySelector('.day-selector');
-  daySelector.addEventListener('click', (e) => {
-    const day = e.target.closest('.day-item');
-    if (!day) return;
-    document.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
-    day.classList.add('active');
-    currentDay = day.dataset.day;
-    updateTasksForDay(currentDay);
-  });
 
   // --- Shuffle button ---
   const shuffleBtn = document.querySelector('.shuffle-btn');
@@ -1549,34 +1551,39 @@ gotoOneTimePage = function(n) {
 
 let dayRangeExpanded = false; // false = 1 week, true = 3 weeks
 
-const expandBtn = document.querySelector('.expand-icon');
-expandBtn?.addEventListener('click', () => {
-  dayRangeExpanded = !dayRangeExpanded;
-  renderDaySelector(); // redraw the day items
-  updateExpandIcon();  // flip the icon
-});
+
 
 function updateExpandIcon() {
   const expandBtn = document.querySelector('.expand-icon');
   if (!expandBtn) return;
-  expandBtn.textContent = dayRangeExpanded ? '↔' : '↕'; 
+  // your CSS sets ↕ by default; switch to ↔ in expanded if you like:
+  expandBtn.textContent = dayRangeExpanded ? '↔' : '↕';
 }
 
 function renderDaySelector() {
   const container = document.querySelector('.day-selector');
   if (!container) return;
 
-  const expandBtn = container.querySelector('.expand-icon');
-  container.innerHTML = '';
+  // Preserve (or create) the expand button
+  let expandBtn = container.querySelector('.expand-icon');
+  if (!expandBtn) {
+    expandBtn = document.createElement('button');
+    expandBtn.className = 'expand-icon';
+    expandBtn.type = 'button';
+    expandBtn.setAttribute('aria-label', 'Expand/collapse day range');
+  }
 
-  // Anchor base date: Thu Dec 7, 2023
-  const baseDate = new Date(2023, 11, 7); 
+  // Build wrapper + days
+  const wrapper = document.createElement('div');
+  wrapper.className = 'days-wrapper';
+
+  // Base date example (your prior anchor)
+  const baseDate = new Date(2023, 11, 7); // Thu Dec 7, 2023
   const range = dayRangeExpanded ? 21 : 7;
-  let firstDayEl = null;
 
   for (let i = 0; i < range; i++) {
-    const d = new Date(baseDate);   // clone Dec 7
-    d.setDate(d.getDate() + i);     // ✅ advance relative to that clone
+    const d = new Date(baseDate);
+    d.setDate(d.getDate() + i);
 
     const dayAbbr = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
     const dayNum = d.getDate();
@@ -1586,41 +1593,760 @@ function renderDaySelector() {
     el.dataset.day = `${dayAbbr.toLowerCase()}-${dayNum}`;
     el.innerHTML = `
       <p class="day-abbr">${dayAbbr}</p>
-      <p class="day-abbr">${dayNum}</p>
+      <p class="day-abbr">${String(dayNum).padStart(2,'0')}</p>
     `;
-    if (i === 0) firstDayEl = el;
-    container.appendChild(el);
+    wrapper.appendChild(el);
   }
 
-  if (expandBtn) container.appendChild(expandBtn);
+  // Rebuild container contents
+  container.innerHTML = '';
+  container.appendChild(wrapper);
+  container.appendChild(expandBtn);
 
+  // CLICK: expand/collapse (bind to the live button we just appended)
+  expandBtn.onclick = (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation(); // avoid being eaten by parent listeners
+    dayRangeExpanded = !dayRangeExpanded;
+    renderDaySelector();  // rebuild with new range
+  };
+
+  // Apply collapsed/expanded classes for your CSS
   container.classList.toggle('expanded', dayRangeExpanded);
   container.classList.toggle('collapsed', !dayRangeExpanded);
 
-  updateExpandIcon();
-
-  // Default: highlight first day (Thu 7) and load tasks
-  if (firstDayEl) {
-    firstDayEl.classList.add('active');
-    currentDay = firstDayEl.dataset.day;
+  // Default select first day and load tasks
+  const first = wrapper.querySelector('.day-item');
+  if (first) {
+    first.classList.add('active');
+    currentDay = first.dataset.day;
     updateTasksForDay(currentDay);
   }
+
+  updateExpandIcon();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderDaySelector();
+
+  // Day click handling (delegated to wrapper)
+  const sel = document.querySelector('.day-selector');
+  sel?.addEventListener('click', (e) => {
+    const item = e.target.closest('.day-item');
+    if (item) {
+      sel.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
+      item.classList.add('active');
+      currentDay = item.dataset.day;
+      updateTasksForDay(currentDay);
+      return;
+    }
+    if (e.target.closest('.expand-icon')) {
+      dayRangeExpanded = !dayRangeExpanded;
+      renderDaySelector();
+    }
+  });
+});
+
+
+
+
+function activateTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.getAttribute('data-tab') === tabName);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => {
+    c.classList.toggle('active', c.id === `${tabName}-content`);
+  });
+  currentTab = tabName;
+}
+
+
+// On load, respect hash (#rooms) or query (?tab=rooms)
+const paramTab = new URLSearchParams(location.search).get('tab');
+const hashTab = location.hash ? location.hash.slice(1) : '';
+const initialTab = (paramTab === 'rooms' || hashTab === 'rooms') ? 'rooms' : 'tasks';
+activateTab(initialTab);
+
+// (Optional) react if hash changes later
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if (h === 'rooms' || h === 'tasks') activateTab(h);
+});
+
+// ===== AUTO-SANITIZE =====
+const AS = {
+  modal: null,
+  page: 'start',
+  timerSecs: 30 * 60, // default 30 min
+  remaining: 30 * 60,
+  interval: null,
+  paused: false,
+  currentTask: null,  // { room, task }
+};
+
+function asFormat(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  const s = secs % 60;
+  if (h > 0) return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function asGoto(page) {
+  AS.page = page;
+  AS.modal.querySelectorAll('.modal-page').forEach(pg => {
+    pg.classList.toggle('is-active', pg.getAttribute('data-page') === page);
+  });
+}
+
+function asOpen() {
+  if (!AS.modal) AS.modal = document.getElementById('autoSanitizeModal');
+  if (!AS.modal) return;
+
+  // pick first low-effort task (prefer current day; fallback all days)
+  AS.currentTask = asPickLowEffort();
+  asRenderStart();
+  AS.modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  asGoto('start');
+}
+
+function asClose() {
+  if (!AS.modal) return;
+  asStopTimer(true);
+  AS.modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function asRenderStart() {
+  const title = document.getElementById('asTaskTitle');
+  const meta  = document.getElementById('asTaskMeta');
+  const begin = document.getElementById('asBeginBtn');
+
+  if (!AS.currentTask) {
+    title.textContent = 'No low-effort tasks found';
+    meta.textContent = 'Try rescheduling overdue tasks instead.';
+    begin.disabled = true;
+  } else {
+    title.textContent = `${AS.currentTask.task.name} — ${AS.currentTask.roomName}`;
+    meta.textContent  = `${AS.currentTask.task.frequency || ''} • ${AS.currentTask.task.lastCleaned || ''}`;
+    begin.disabled = false;
+  }
+
+  AS.timerSecs = 30*60;
+  AS.remaining = AS.timerSecs;
+  begin.textContent = `Begin`;
+}
+
+function asPickLowEffort() {
+  const dayKey = currentDay || Object.keys(taskData)[0];
+  const collect = (keys) => {
+    const out = [];
+    keys.forEach(k => {
+      const rooms = taskData[k] || {};
+      Object.keys(rooms).forEach(room => {
+        (rooms[room]||[]).forEach(t => {
+          const eff = (t.effort || 'moderate').toLowerCase();
+          const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+          // treat "low" effort and due-ish tasks as quick wins
+          if (eff === 'low' || pct <= 33) {
+            out.push({ room, roomName: room.charAt(0).toUpperCase()+room.slice(1), task: t, day: k });
+          }
+        });
+      });
+    });
+    return out;
+  };
+
+  // prefer current day; then all
+  let list = collect([dayKey]);
+  if (!list.length) list = collect(Object.keys(taskData));
+
+  // sort by "due first", then low effort
+  list.sort((a,b)=>{
+    const pa = computeProgressPercent(a.task.lastCleaned, a.task.frequency);
+    const pb = computeProgressPercent(b.task.lastCleaned, b.task.frequency);
+    const ea = (a.task.effort||'moderate')==='low' ? 0:1;
+    const eb = (b.task.effort||'moderate')==='low' ? 0:1;
+    return (pa - pb) || (ea - eb);
+  });
+
+  return list[0] || null;
+}
+
+// ----- Time Picker (trio) -----
+function asBuildTimeListsOnce() {
+  const H = document.getElementById('asHourList');
+  const M = document.getElementById('asMinuteList');
+  const S = document.getElementById('asSecondList');
+  if (!H || H.dataset.built) return;
+  for (let i=0;i<=12;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.hour=i; el.textContent=String(i).padStart(2,'0'); H.appendChild(el); }
+  for (let i=0;i<60;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.minute=i; el.textContent=String(i).padStart(2,'0'); M.appendChild(el); }
+  for (let i=0;i<60;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.second=i; el.textContent=String(i).padStart(2,'0'); S.appendChild(el); }
+  H.dataset.built = M.dataset.built = S.dataset.built = '1';
+
+  // click to select + center
+  function mark(listSel, attr, val){
+    const list = document.querySelector(listSel);
+    list.querySelectorAll('.picker-item').forEach(i=>i.classList.toggle('selected', String(i.dataset[attr])===String(val)));
+  }
+  function center(scrollSel, itemSel){
+    const sc = document.querySelector(scrollSel), it = document.querySelector(itemSel);
+    if(!sc||!it) return; sc.scrollTop = it.offsetTop - (sc.clientHeight/2) + (it.offsetHeight/2);
+  }
+  function snapInstall(scrollSel, itemSel, attr, on) {
+    const sc = document.querySelector(scrollSel);
+    let t; sc.addEventListener('scroll', ()=>{
+      clearTimeout(t); t = setTimeout(()=>{
+        const items = [...document.querySelectorAll(itemSel)];
+        const mid = sc.getBoundingClientRect().top + sc.clientHeight/2;
+        let best=null,bd=1e9;
+        for(const it of items){ const r=it.getBoundingClientRect(); const d=Math.abs((r.top+r.height/2)-mid); if(d<bd){bd=d;best=it;} }
+        if(best){
+          sc.scrollTo({ top: best.offsetTop - (sc.clientHeight/2) + (best.offsetHeight/2), behavior:'smooth' });
+          mark(itemSel, attr, best.dataset[attr]); on(parseInt(best.dataset[attr],10));
+        }
+      }, 90);
+    });
+  }
+
+  // click handlers
+  H.addEventListener('click', e=>{
+    const it=e.target.closest('.picker-item'); if(!it) return;
+    mark('#asHourList .picker-item','hour',it.dataset.hour);
+    center('#asHourScroll', `#asHourList .picker-item[data-hour="${it.dataset.hour}"]`);
+  });
+  M.addEventListener('click', e=>{
+    const it=e.target.closest('.picker-item'); if(!it) return;
+    mark('#asMinuteList .picker-item','minute',it.dataset.minute);
+    center('#asMinuteScroll', `#asMinuteList .picker-item[data-minute="${it.dataset.minute}"]`);
+  });
+  S.addEventListener('click', e=>{
+    const it=e.target.closest('.picker-item'); if(!it) return;
+    mark('#asSecondList .picker-item','second',it.dataset.second);
+    center('#asSecondScroll', `#asSecondList .picker-item[data-second="${it.dataset.second}"]`);
+  });
+
+  // snap on scroll stop
+  snapInstall('#asHourScroll',   '#asHourList .picker-item',   'hour',   v=>AS._h=v);
+  snapInstall('#asMinuteScroll', '#asMinuteList .picker-item', 'minute', v=>AS._m=v);
+  snapInstall('#asSecondScroll', '#asSecondList .picker-item', 'second', v=>AS._s=v);
+}
+
+function asOpenTimePicker(defaultSecs){
+  AS._h = Math.floor(defaultSecs/3600);
+  AS._m = Math.floor((defaultSecs%3600)/60);
+  AS._s = defaultSecs%60;
+
+  asBuildTimeListsOnce();
+
+  // mark & center defaults
+  ['hour','minute','second'].forEach(kind=>{
+    const val = kind==='hour'?AS._h:kind==='minute'?AS._m:AS._s;
+    const listSel = kind==='hour'?'#asHourList':'#asMinuteList';
+    const scrollSel = kind==='hour'?'#asHourScroll':'#asMinuteScroll';
+    const itemSel = kind==='hour'?`#asHourList .picker-item[data-hour="${val}"]`:
+                    kind==='minute'?`#asMinuteList .picker-item[data-minute="${val}"]`:
+                                     `#asSecondList .picker-item[data-second="${val}"]`;
+    const attr = kind==='hour'?'hour':kind==='minute'?'minute':'second';
+    document.querySelectorAll(`${listSel} .picker-item`).forEach(i=>i.classList.remove('selected'));
+    const target = document.querySelector(itemSel);
+    if (target) {
+      target.classList.add('selected');
+      const scSel = kind==='hour'?scrollSel:kind==='minute'?scrollSel:'#asSecondScroll';
+      const sc = document.querySelector(scSel);
+      sc.scrollTop = target.offsetTop - (sc.clientHeight/2) + (target.offsetHeight/2);
+    }
+  });
+
+  asGoto('time');
+}
+
+
+function asStopTimer(hard){
+  if (AS.interval) { clearInterval(AS.interval); AS.interval = null; }
+  if (hard) { AS.remaining = AS.timerSecs; AS.paused = false; }
+}
+
+function asTickRender() {
+  const title = document.getElementById('asRunningTask');
+  const cd    = document.getElementById('asCountdown');
+
+  if (title) {
+    if (AS.mode === 'break') {
+      title.textContent = 'Break';
+    } else if (AS.currentTask) {
+      title.textContent = `${AS.currentTask.task.name} — ${AS.currentTask.roomName}`;
+    } else {
+      title.textContent = 'Task';
+    }
+  }
+  if (cd) cd.textContent = asFormat(AS.remaining);
+}
+
+
+// ----- Overdue rescheduler -----
+function asListOverdue() {
+  const rows = [];
+  Object.keys(taskData).forEach(day=>{
+    Object.entries(taskData[day]||{}).forEach(([room, tasks])=>{
+      (tasks||[]).forEach(t=>{
+        const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+        if (pct <= 10) {
+          rows.push({ day, room, roomName: room.charAt(0).toUpperCase()+room.slice(1), t });
+        }
+      });
+    });
+  });
+  return rows;
+}
+
+function asRenderOverdue() {
+  const host = document.getElementById('asOverdueList');
+  host.innerHTML = '';
+  const rows = asListOverdue();
+  if (!rows.length) {
+    host.innerHTML = '<p class="muted">No overdue tasks 🎉</p>';
+    return;
+  }
+
+  rows.forEach((row, idx)=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'overdue-item';
+    wrap.innerHTML = `
+      <button class="overdue-head" aria-expanded="false">
+        <span>${row.t.name} — ${row.roomName}</span>
+        <span class="muted">${row.t.lastCleaned || ''}</span>
+      </button>
+      <div class="overdue-body" hidden>
+        <div class="date-grid" style="margin:8px 0;">
+          <select class="dropdown-select as-month"></select>
+          <select class="dropdown-select as-day"></select>
+          <select class="dropdown-select as-year"></select>
+        </div>
+        <button class="row row-nav as-time-row">
+          <span>Time</span>
+          <span class="row-value as-time-val">10:00 AM</span>
+        </button>
+      </div>
+    `;
+    host.appendChild(wrap);
+
+    // expand/collapse
+    const head = wrap.querySelector('.overdue-head');
+    const body = wrap.querySelector('.overdue-body');
+    head.addEventListener('click', ()=>{
+      const open = body.hasAttribute('hidden');
+      body.toggleAttribute('hidden', !open);
+      head.setAttribute('aria-expanded', String(open));
+      if (open) asBuildDatePickers(wrap);
+    });
+
+    // simple time prompt (you can reuse your inline picker if you prefer)
+    wrap.querySelector('.as-time-row').addEventListener('click', ()=>{
+      const v = prompt('Pick a time (e.g., 2:30 PM)', wrap.querySelector('.as-time-val').textContent);
+      if (v && v.trim()) wrap.querySelector('.as-time-val').textContent = v.trim().toUpperCase();
+    });
+  });
+}
+
+function asBuildDatePickers(scopeEl){
+  const monthSel = scopeEl.querySelector('.as-month');
+  const daySel   = scopeEl.querySelector('.as-day');
+  const yearSel  = scopeEl.querySelector('.as-year');
+  if (!monthSel || monthSel.options.length) return;
+
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  months.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i+1;o.textContent=m; monthSel.appendChild(o); });
+
+  const now = new Date();
+  for(let y=now.getFullYear(); y<=now.getFullYear()+1; y++){
+    const o = document.createElement('option'); o.value=y; o.textContent=y; yearSel.appendChild(o);
+  }
+  yearSel.value = String(now.getFullYear()); monthSel.value = String(now.getMonth()+1);
+
+  function daysInMonth(y,m){ return new Date(y,m,0).getDate(); }
+  function fillDays(){
+    const y=parseInt(yearSel.value||now.getFullYear(),10);
+    const m=parseInt(monthSel.value||now.getMonth()+1,10);
+    const n=daysInMonth(y,m);
+    daySel.innerHTML='';
+    for(let d=1; d<=n; d++){
+      const o=document.createElement('option'); o.value=d; o.textContent=String(d).padStart(2,'0'); daySel.appendChild(o);
+    }
+    daySel.value = String(Math.min(now.getDate(), n));
+  }
+  monthSel.addEventListener('change', fillDays);
+  yearSel.addEventListener('change', fillDays);
+  fillDays();
+}
+
+// Add to AS:
+AS.mode = 'work';               // 'work' | 'break'
+AS.workRemaining = 0;           // stores remaining secs when you start a break
+AS.breakLengthSecs = 5 * 60;    // 5-minute default
+
+
+// ----- Wire UI -----
+document.addEventListener('DOMContentLoaded', () => {
+  // Hook your existing "Shuffle" button to open Auto-Sanitize
+  const shuffleBtn = document.querySelector('.shuffle-btn');
+  if (shuffleBtn) {
+    shuffleBtn.replaceWith(shuffleBtn.cloneNode(true));
+  }
+  const freshShuffle = document.querySelector('.shuffle-btn');
+  if (freshShuffle) {
+    freshShuffle.addEventListener('click', (e)=>{
+      e.preventDefault();
+      asOpen();
+    });
+  }
+
+  // Modal buttons
+  const modal = document.getElementById('autoSanitizeModal');
+  if (!modal) return;
+
+  // Close / Back
+  document.getElementById('asCloseBtn')?.addEventListener('click', asClose);
+  document.getElementById('asBackBtn')?.addEventListener('click', () => {
+    if (AS.page === 'review') { asGoto('start'); return; }
+    if (AS.page === 'timer')  { asGoto('start'); asStopTimer(true); return; }
+    // keep your other cases (done/resched) as you already had
+  });
+
+// Start page -> Review (default to 30:00)
+document.getElementById('asBeginBtn')?.addEventListener('click', () => {
+  if (!AS.timerSecs) AS.timerSecs = 30 * 60; // default
+  asShowReview();                              // <- activates review page
+});
+
+document.getElementById('asReviewEdit')?.addEventListener('click', () => {
+  asOpenTimePopup(AS.timerSecs || 30*60);      // mini popup
+});
+
+document.getElementById('asReviewBegin')?.addEventListener('click', () => {
+  AS.timerSecs = Math.max(5, AS.timerSecs || 30*60);
+  asStartTimer(AS.timerSecs);                  // -> timer page
+});
+
+  // Mini popup: save/cancel/close
+document.getElementById('asTimePopupSave')?.addEventListener('click', () => {
+  const secs = Math.max(5, readPopupSecs() || 30*60);
+  AS.timerSecs = secs;
+  asCloseTimePopup();
+  asShowReview(); // refresh labels (Begin (xx:yy), Timer set to xx:yy)
+});
+
+document.getElementById('asTimePopupCancel')?.addEventListener('click', asCloseTimePopup);
+document.getElementById('asTimePopupClose')?.addEventListener('click', asCloseTimePopup);
+document.getElementById('asTimePopup')?.addEventListener('click', (e) => {
+  if (e.target.classList.contains('mini-backdrop')) asCloseTimePopup();
+});
+
+  document.getElementById('asTimeBack')?.addEventListener('click', () => {
+    asGoto('start');
+  });
+
+  document.getElementById('asTimeBegin')?.addEventListener('click', () => {
+    // Read the trio scroller selection; fall back to 30:00 if something’s unset
+    const total =
+      (Number(AS._h) || 0) * 3600 +
+      (Number(AS._m) || 30) * 60 +
+      (Number(AS._s) || 0);
+  
+    AS.timerSecs = Math.max(5, total);
+    asStartTimer(AS.timerSecs);  // this will asGoto('timer')
+  });
+
+  const timeBeginBtn = document.getElementById('asTimeBegin');
+const updateTimeBeginLabel = () => {
+  const secs = (Number(AS._h)||0)*3600 + (Number(AS._m)||0)*60 + (Number(AS._s)||0);
+  if (timeBeginBtn) timeBeginBtn.textContent = `Begin (${asFormat(secs || 1800)})`;
+};
+// Call updateTimeBeginLabel() after building the lists and inside your snap/click handlers for the trio
+
+
+  document.getElementById('asGoToTime')?.addEventListener('click', () => {
+    asOpenTimePicker(AS.timerSecs);   // builds lists & goes to data-page="time"
+  });
+
+  document.getElementById('asEditTimeBtn')?.addEventListener('click', ()=>{
+    asOpenTimePicker(AS.timerSecs);
+  });
+  document.getElementById('asNoThanksBtn')?.addEventListener('click', ()=>{
+    asRenderOverdue();
+    asGoto('resched');
+  });
+
+  // Time page
+  document.getElementById('asTimeCancel')?.addEventListener('click', ()=>asGoto('start'));
+  document.getElementById('asTimeConfirm')?.addEventListener('click', ()=>{
+    const total = (AS._h||0)*3600 + (AS._m||0)*60 + (AS._s||0);
+    AS.timerSecs = Math.max(5, total || AS.timerSecs);
+    asStartTimer(AS.timerSecs);
+  });
+
+  // Timer page
+// When starting a timer, ensure not on break and label is reset
+
+// Rebind break button cleanly to start a 5-min break
+(function bindBreakButton() {
+  const btn = document.getElementById('asBreakBtn');
+  if (!btn) return;
+
+  // Nuke any old listeners by cloning
+  const fresh = btn.cloneNode(true);
+  btn.replaceWith(fresh);
+
+  fresh.addEventListener('click', () => {
+    AS.workRemaining = AS.remaining || AS.timerSecs || 30*60;   // save current work time
+    asStartTimer(AS.breakLengthSecs || 5*60, 'break');          // start the break NOW
+  });
+})();
+
+
+
+
+
+// Take a break toggle (under the timer)
+
+// Reset keeps you on the timer page and exits break mode
+// document.getElementById('asResetBtn')?.addEventListener('click', () => {
+//   AS.remaining = AS.timerSecs;
+//   AS.paused = false;
+//   const breakBtn = document.getElementById('asBreakBtn');
+//   if (breakBtn) breakBtn.textContent = 'Take a break';
+//   asTickRender();
+// });
+
+  document.getElementById('asFinishBtn')?.addEventListener('click', ()=>{
+    asStopTimer(false);
+    asGoto('done');
+  });
+
+  // Done page
+  document.getElementById('asAnotherBtn')?.addEventListener('click', ()=>{
+    AS.currentTask = asPickLowEffort();
+    asRenderStart();
+    asGoto('start');
+  });
+  document.getElementById('asCloseToTasksBtn')?.addEventListener('click', asClose);
+
+  // Rescheduler page
+  document.getElementById('asReschedDone')?.addEventListener('click', ()=>{
+    // (Here you'd persist date/time changes if storing)
+    asClose();
+    // ensure Tasks tab is visible
+    const tasksTabBtn = document.querySelector('.tab[data-tab="tasks"]');
+    if (tasksTabBtn) tasksTabBtn.click();
+  });
+});
+
+function asStartTimer(totalSecs, mode = 'work', resumeRemaining = null) {
+  if (!window.AS) window.AS = {};
+  if (!AS.breakLengthSecs) AS.breakLengthSecs = 5 * 60;
+
+  AS.mode = mode;
+  AS.paused = false;
+
+  if (AS.interval) { clearInterval(AS.interval); AS.interval = null; }
+
+  if (mode === 'work') {
+    AS.workRemaining = (typeof resumeRemaining === 'number')
+      ? resumeRemaining
+      : (totalSecs || AS.timerSecs || 30*60);
+    AS.remaining = AS.workRemaining;
+  } else {
+    AS.remaining = AS.breakLengthSecs;
+  }
+
+  updateTimerUIForMode();
+  asGoto('timer');
+
+  // Initialize ring with the correct total for this mode
+  const totalForRing = (mode === 'break') ? AS.breakLengthSecs : (AS.timerSecs || AS.workRemaining);
+  requestAnimationFrame(() => asRingInit(totalForRing));
+
+  asTickRender();  // paints the initial label & ring
+
+  AS.interval = setInterval(() => {
+    if (AS.paused) return;
+    AS.remaining = Math.max(0, AS.remaining - 1);
+    asTickRender();
+
+    if (AS.remaining === 0) {
+      clearInterval(AS.interval); AS.interval = null;
+      if (AS.mode === 'work') asGoto('done');
+      // break ends: wait for "I'm ready!" to resume work
+    }
+  }, 1000);
+}
+
+
+// ---- Review page helpers ----
+
+function asShowReview() {
+  const durEl = document.getElementById('asReviewDuration');
+  if (durEl) durEl.textContent = asFormat(AS.timerSecs || 30*60);
+  asGoto('review');                            // <- sets data-page="review" active
+}
+
+
+// ---- Mini popup time picker ----
+let asPopupBuilt = false;
+function asOpenTimePopup(defaultSecs) {
+  const sheet = document.getElementById('asTimePopup');
+  if (!sheet) return;
+  // build lists once
+  if (!asPopupBuilt) {
+    const H = document.getElementById('asPHourList');
+    const M = document.getElementById('asPMinuteList');
+    const S = document.getElementById('asPSecondList');
+    for (let i=0;i<=12;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.hour=i; el.textContent=String(i).padStart(2,'0'); H.appendChild(el); }
+    for (let i=0;i<60;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.minute=i; el.textContent=String(i).padStart(2,'0'); M.appendChild(el); }
+    for (let i=0;i<60;i++){ const el=document.createElement('div'); el.className='picker-item'; el.dataset.second=i; el.textContent=String(i).padStart(2,'0'); S.appendChild(el); }
+    // click select
+    H.addEventListener('click', e => { const it=e.target.closest('.picker-item'); if(!it) return; selectPopup('hour', +it.dataset.hour); });
+    M.addEventListener('click', e => { const it=e.target.closest('.picker-item'); if(!it) return; selectPopup('minute', +it.dataset.minute); });
+    S.addEventListener('click', e => { const it=e.target.closest('.picker-item'); if(!it) return; selectPopup('second', +it.dataset.second); });
+    // snap-on-scroll (optional): keep simple for now
+    asPopupBuilt = true;
+  }
+  // set initial selection
+  const h = Math.floor(defaultSecs/3600);
+  const m = Math.floor((defaultSecs%3600)/60);
+  const s = defaultSecs%60;
+  selectPopup('hour', h, true);
+  selectPopup('minute', m, true);
+  selectPopup('second', s, true);
+
+  sheet.hidden = false;
+  sheet.setAttribute('aria-hidden', 'false');
+  document.getElementById('asTimePopupClose')?.focus();
+}
+function asCloseTimePopup() {
+  const sheet = document.getElementById('asTimePopup');
+  if (!sheet) return;
+  sheet.hidden = true;
+  sheet.setAttribute('aria-hidden', 'true');
+}
+function selectPopup(kind, val, center=false){
+  const listId = kind==='hour' ? 'asPHourList' : kind==='minute' ? 'asPMinuteList' : 'asPSecondList';
+  const scrollId = kind==='hour' ? 'asPHourScroll' : kind==='minute' ? 'asPMinuteScroll' : 'asPSecondScroll';
+  const list = document.getElementById(listId);
+  const scroll = document.getElementById(scrollId);
+  list.querySelectorAll('.picker-item').forEach(i => i.classList.toggle('selected', +i.dataset[kind] === val));
+  const it = list.querySelector(`.picker-item[data-${kind}="${val}"]`);
+  if (center && it && scroll) {
+    scroll.scrollTop = it.offsetTop - (scroll.clientHeight/2) + (it.offsetHeight/2);
+  }
+  // stash selection on AS
+  if (kind==='hour') AS._ph = val;
+  if (kind==='minute') AS._pm = val;
+  if (kind==='second') AS._ps = val;
+}
+function readPopupSecs(){
+  return (Number(AS._ph)||0)*3600 + (Number(AS._pm)||0)*60 + (Number(AS._ps)||0);
+}
+
+function updateTimerUIForMode() {
+  const breakBtn  = document.getElementById('asBreakBtn');
+  const finishBtn = document.getElementById('asFinishBtn');
+  if (!finishBtn) return;
+
+  if (AS.mode === 'work') {
+    if (breakBtn) breakBtn.style.display = '';
+    finishBtn.textContent = 'I finished!';
+    finishBtn.onclick = finishWork;
+  } else {
+    if (breakBtn) breakBtn.style.display = 'none';
+    finishBtn.textContent = "I'm ready!";
+    finishBtn.onclick = resumeWork;
+  }
+}
+
+function resumeWork() {
+  const resume = Math.max(1, AS.workRemaining || AS.timerSecs || 30*60);
+  asStartTimer(resume, 'work', resume);
+}
+function finishWork() {
+  if (AS.interval) { clearInterval(AS.interval); AS.interval = null; }
+  asGoto('done');
+}
+
+function asTickRender() {
+  const cd = document.getElementById('asCountdown');
+  if (cd) cd.textContent = asFormat(AS.remaining || 0);
+
+  const totalForRing = (AS.mode === 'break')
+    ? AS.breakLengthSecs
+    : (AS.timerSecs || RING.total);
+
+  asRingUpdate(AS.remaining || 0, totalForRing, AS.mode);
 }
 
 
 
+(function wireBreakButton() {
+  const old = document.getElementById('asBreakBtn');
+  if (!old) return;
+  // Remove ALL previous listeners by cloning
+  const fresh = old.cloneNode(true);
+  old.replaceWith(fresh);
+
+  fresh.addEventListener('click', () => {
+    // Save remaining work time and start a 5-min break
+    AS.workRemaining = AS.remaining || AS.timerSecs || 30*60;
+    asStartTimer(AS.breakLengthSecs || 5*60, 'break');
+  });
+})();
 
 
-// Run once after DOMContentLoaded
-const daySelector = document.querySelector('.day-selector');
-daySelector.addEventListener('click', (e) => {
-  const day = e.target.closest('.day-item');
-  if (!day) return; // ignore clicks outside
-  console.log('Day clicked:', day.getAttribute('data-day'));
+// Resume from break: restore previous remaining work time
+function resumeWork() {
+  const resume = Math.max(1, AS.workRemaining || 1);
+  asStartTimer(resume, 'work', resume);
+}
 
-  document.querySelectorAll('.day-item').forEach(d => d.classList.remove('active'));
-  day.classList.add('active');
-  const selectedDay = day.getAttribute('data-day');
-  currentDay = selectedDay;
-  updateTasksForDay(selectedDay);
+// Finish work
+function finishWork() {
+  if (AS.interval) { clearInterval(AS.interval); AS.interval = null; }
+  asGoto('done');
+}
+
+// (Optional) Reset still works if you kept the button
+document.getElementById('asResetBtn')?.addEventListener('click', () => {
+  AS.paused = false;
+  if (AS.mode === 'work') {
+    asStartTimer(AS.timerSecs || AS.workRemaining || 30*60, 'work');
+  } else {
+    asStartTimer(AS.breakLengthSecs, 'break');
+  }
 });
+
+// === Progress ring helpers ===
+const RING = { fg: null, c: 0, total: 1 };
+
+function asRingInit(totalSecs) {
+  const fg = document.querySelector('#autoSanitizeModal .ring-fg');
+  if (!fg) return;
+  const r = parseFloat(fg.getAttribute('r')) || 54;
+  const c = 2 * Math.PI * r;
+  fg.style.strokeDasharray = `${c} ${c}`;
+  RING.fg = fg;
+  RING.c = c;
+  RING.total = Math.max(1, totalSecs || 1);
+  // start at full circle (remaining == total)
+  asRingUpdate(AS.remaining ?? RING.total, RING.total, AS.mode);
+}
+
+function asRingUpdate(remaining, totalSecs, mode) {
+  if (!RING.fg || !RING.c) return;
+  const total = Math.max(1, totalSecs || RING.total);
+  const frac = Math.max(0, Math.min(1, remaining / total));   // 1.0 = full, 0.0 = empty
+  const offset = RING.c * (1 - frac);
+  RING.fg.style.strokeDashoffset = `${offset}`;
+
+  // color by mode
+  RING.fg.style.stroke = (mode === 'break') ? '#4db6ac' : '#1976d2';
+}
