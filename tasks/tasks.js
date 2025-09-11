@@ -1066,24 +1066,35 @@ function daysAgoFromText(text) {
       const pct = Math.max(0, Math.min(100, Number(pctRaw || 0)));
       const colorClass = progressColorClass(pct);
       const status = statusFromPercent(pct);
+    
       return `
-        <div class="task-item">
+      <div class="task-item" role="group" aria-expanded="false">
+        <div class="task-main">
           <div class="task-top">
             <div class="task-left">
               <p class="task-name">${task.name}</p>
-              <p class="task-last">${task.lastCleaned||''}</p>
+              <p class="task-last">${task.lastCleaned || ''}</p>
             </div>
             <div class="task-right">
               <p class="status-text">${status}</p>
               <div class="progress-bar ${colorClass}">
-  <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
-</div>
+                <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
+              </div>
               ${renderEffortDots(task.effort)}
             </div>
           </div>
           <div class="task-frequency"><span>${task.frequency}</span></div>
-        </div>`;
+        </div>
+    
+        <div class="task-actions" hidden>
+          <button class="ta-back" aria-label="Back">‹</button>
+          <button class="ta-done" aria-label="Mark Done">✔<span>Mark Done!</span></button>
+          <button class="ta-focus" aria-label="Focus">⌛<span>Focus</span></button>
+          <button class="ta-edit" aria-label="Edit">✎<span>Edit</span></button>
+        </div>
+      </div>`;
     };
+    
   
     // ✅ rooms always alphabetical
     const roomsAZ = Object.keys(dayTasks).sort((a, b) => a.localeCompare(b));
@@ -2489,3 +2500,59 @@ function asRingUpdate(remaining, totalSecs, mode) {
   RING.fg.style.stroke = (mode === 'break') ? '#4db6ac' : '#1976d2';
 }
 
+(() => {
+  const pane = document.getElementById('tasks-for-day');
+  if (!pane) return;
+  let openCard = null;
+
+  function open(card){
+    if (openCard && openCard !== card) close(openCard);
+    card.classList.add('open');
+    card.setAttribute('aria-expanded','true');
+    card.querySelector('.task-actions').hidden = false;
+    openCard = card;
+  }
+  function close(card){
+    card.classList.remove('open');
+    card.setAttribute('aria-expanded','false');
+    // let the fade finish but keep it interactive:
+    setTimeout(()=>{ card.querySelector('.task-actions').hidden = true; }, 180);
+    if (openCard === card) openCard = null;
+  }
+
+  pane.addEventListener('click', (e) => {
+    const card = e.target.closest('.task-item');
+    if (!card) return;
+
+    // Action buttons
+    if (e.target.closest('.ta-back'))  { close(card); return; }
+    if (e.target.closest('.ta-done'))  {
+      // quick UX: flash done
+      card.style.opacity = .6;
+      setTimeout(()=>{ card.style.opacity = 1; }, 250);
+      close(card);
+      return;
+    }
+    if (e.target.closest('.ta-focus')) {
+      // jump to your Review page flow
+      if (!AS?.modal) { /* no-op if modal isn’t on this page */ }
+      asOpen(); asShowReview();
+      close(card);
+      return;
+    }
+    if (e.target.closest('.ta-edit'))  {
+      // hook up your edit modal if you have one
+      alert('Edit coming soon ✏️');
+      close(card);
+      return;
+    }
+
+    // Otherwise: toggle the tray
+    if (card.classList.contains('open')) close(card);
+    else open(card);
+  });
+
+  // Close any open tray when changing day
+  const _origUpdate = updateTasksForDay;
+  window.updateTasksForDay = function(day){ if (openCard) { close(openCard); } _origUpdate(day); };
+})();
