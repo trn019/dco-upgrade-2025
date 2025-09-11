@@ -3,42 +3,59 @@ const taskData = {
     bedroom: [
       { name: "Vacuum Floor", lastCleaned: "3 weeks ago", progress: 85, status: "Uh oh...", frequency: "Every week", progressType: "red", effort: "high" },
       { name: "Organize Closet", lastCleaned: "3 weeks ago", progress: 60, status: "Getting dusty...", frequency: "Every month", progressType: "yellow", effort: "moderate" },
-      { name: "Change Sheets", lastCleaned: "1 week ago", progress: 50, status: "Needs fresh sheets", frequency: "Weekly", progressType: "yellow", effort: "moderate" }
+      { name: "Change Sheets", lastCleaned: "1 week ago", progress: 50, status: "Needs fresh sheets", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+      { type: "one-time", name: "Bag Clothes for Donation", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ],
     kitchen: [
       { name: "Clean Countertops", lastCleaned: "2 days ago", progress: 20, status: "Looking good!", frequency: "Every 3 days", progressType: "green", effort: "low" },
       { name: "Wash Dishes", lastCleaned: "yesterday", progress: 40, status: "Some dishes piling up", frequency: "Daily", progressType: "yellow", effort: "low" },
       { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Greasy again", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
-      { name: "Take Out Trash", lastCleaned: "today", progress: 10, status: "Empty bin", frequency: "Daily", progressType: "green", effort: "low" }
+      { name: "Take Out Trash", lastCleaned: "today", progress: 10, status: "Empty bin", frequency: "Daily", progressType: "green", effort: "low" },
+      { type: "one-time", name: "Descale Kettle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ],
     bathroom: [
       { name: "Clean Mirror", lastCleaned: "4 days ago", progress: 60, status: "Getting spotted", frequency: "Weekly", progressType: "yellow", effort: "low" },
-      { name: "Scrub Shower", lastCleaned: "2 weeks ago", progress: 80, status: "Mildew starting", frequency: "Biweekly", progressType: "red", effort: "high" }
+      { name: "Scrub Shower", lastCleaned: "2 weeks ago", progress: 80, status: "Mildew starting", frequency: "Biweekly", progressType: "red", effort: "high" },
+      { type: "one-time", name: "Replace Shower Curtain Liner", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ],
     living: [
-      { name: "Dust TV Stand", lastCleaned: "5 days ago", progress: 55, status: "Light dust visible", frequency: "Weekly", progressType: "yellow", effort: "low" }
+      { name: "Dust TV Stand", lastCleaned: "5 days ago", progress: 55, status: "Light dust visible", frequency: "Weekly", progressType: "yellow", effort: "low" },
+      { type: "one-time", name: "Hang Picture Frame", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ]
   },
 
   "fri-8": {
     bedroom: [
-      { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" }
+      { name: "Make Bed", lastCleaned: "yesterday", progress: 30, status: "All good!", frequency: "Daily", progressType: "green", effort: "low" },
+      { type: "one-time", name: "Swap Summer/Winter Bedding", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
     ],
     kitchen: [
       { name: "Wash Dishes", lastCleaned: "this morning", progress: 10, status: "Fresh!", frequency: "Daily", progressType: "green", effort: "low" },
-      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" }
+      { name: "Clean Stove", lastCleaned: "1 week ago", progress: 70, status: "Needs attention", frequency: "Weekly", progressType: "yellow", effort: "moderate" },
+      { type: "one-time", name: "Run Dishwasher Cleaner Cycle", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
+    ],
+    living: [
+      { type: "one-time", name: "Spot Clean Couch", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ]
   },
 
   "sat-9": {
     bedroom: [
-      { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" }
+      { name: "Change Sheets", lastCleaned: "2 weeks ago", progress: 80, status: "Time to wash!", frequency: "Every 2 weeks", progressType: "red", effort: "moderate" },
+      { type: "one-time", name: "Assemble Nightstand", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
     ],
     kitchen: [
       { name: "Deep Clean Fridge", lastCleaned: "1 month ago", progress: 90, status: "Overdue!", frequency: "Monthly", progressType: "red", effort: "high" }
+    ],
+    bathroom: [
+      { type: "one-time", name: "Re-caulk Sink Edge", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "moderate" }
+    ],
+    living: [
+      { type: "one-time", name: "Wrap Extension Cables w/ Clips", lastCleaned: "—", progress: 0, status: "One-off task", frequency: "One-time", progressType: "green", effort: "low" }
     ]
   }
 };
+
   
 // Persist collapsed state per day -> room
 const collapsedRoomsByDay = {};              // e.g. { 'thu-7': { kitchen: true } }
@@ -1032,6 +1049,35 @@ function daysAgoFromText(text) {
     `;
   }
 
+  // --- TOP LEVEL (above updateTasksForDay) ---
+  function renderOneTimeTask(task, roomKey, dayKey) {
+    return `
+    <div class="task-item one-time"
+         role="group"
+         data-type="one-time"
+         data-room="${roomKey}"
+         data-day="${dayKey}"
+         data-name="${task.name || ''}">
+      <div class="task-main">
+        <div class="tm-row">
+          <div class="tm-text">
+            <div class="tm-title">${task.name}</div>
+            <div class="tm-sub">cleaned ${task.lastCleaned || '—'} ago</div>
+          </div>
+  
+          <!-- ✅ single clickable check, no tray/progress/dots/status -->
+          <button class="ot-check"
+                  type="button"
+                  aria-pressed="false"
+                  aria-label="Mark '${task.name}' done">
+            <span class="ot-circle" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }
+  
+
   function updateTasksForDay(day) {
     const tasksContainer = document.getElementById('tasks-for-day');
     const dayTasks = taskData[day] || {};
@@ -1052,6 +1098,7 @@ function daysAgoFromText(text) {
       copy.sort((a, b) => (EFFORT_ORDER[a.effort] || 2) - (EFFORT_ORDER[b.effort] || 2));
       return copy;
     };
+    
   
     const renderTask = (task, roomKey, dayKey)  => {
       const pctRaw = computeProgressPercent(task.lastCleaned, task.frequency);
@@ -1097,6 +1144,11 @@ function daysAgoFromText(text) {
       </div>`;
     };
     
+    const renderAnyTask = (task, roomKey, dayKey) => {
+      return (task.type === 'one-time')
+        ? renderOneTimeTask(task, roomKey, dayKey)
+        : renderTask(task, roomKey, dayKey); // your existing recurring card
+    };
     
     
   
@@ -1127,7 +1179,7 @@ function daysAgoFromText(text) {
 
           </div>
           <div class="room-body" id="${bodyId}" ${collapsed ? 'hidden' : ''}>
-          ${sorted.map(t => renderTask(t, room, day)).join('')}
+          ${sorted.map(t => renderAnyTask(t, room, day)).join('')}
           </div>
         </section>`;
     });
@@ -1281,91 +1333,71 @@ function closeRoomScreen() {
 let roomSort = 'urgency'; // default sort for the room screen
 
 (function initRoomScreen() {
-  const screenEl   = document.getElementById('room-screen');
-  const titleEl    = document.getElementById('roomScreenTitle');
-  const listEl = document.getElementById('roomScreenTasks');
+  const screenEl = document.getElementById('room-screen');
+  const titleEl  = document.getElementById('roomScreenTitle');
+  const listEl   = document.getElementById('roomScreenTasks');
 
-  // Focus from a room task -> open Auto-Sanitize Review with THIS task
-// Room screen: open/close the same action tray + Focus wiring
-listEl.addEventListener('click', (e) => {
-  const card = e.target.closest('.task-item');
-  if (!card) return;
+  // ===== Clicks inside the room task list =====
+  listEl.addEventListener('click', (e) => {
+    const card = e.target.closest('.task-item');
+    if (!card) return;
 
-  // Action tray buttons
-  if (e.target.closest('.ta-back'))  { closeCard(card); return; }
-  if (e.target.closest('.ta-done'))  {
-    // placeholder "done" feedback
-    card.style.opacity = .6;
-    setTimeout(()=>{ card.style.opacity = 1; }, 250);
-    closeCard(card);
-    return;
-  }
-  if (e.target.closest('.ta-edit'))  {
-    alert('Edit coming soon ✏️');
-    closeCard(card);
-    return;
-  }
-  if (e.target.closest('.ta-focus')) {
-    // Open Auto-Sanitize Review with THIS task
-    const ds = card.dataset;
-    const roomKey  = ds.room || '';
-    const roomName = roomKey ? roomKey.charAt(0).toUpperCase() + roomKey.slice(1) : '';
-
-    asOpen();
-    AS.currentTask = {
-      room: roomKey,
-      roomName,
-      task: {
-        name: ds.name || '',
-        lastCleaned: ds.last || '',
-        frequency: ds.frequency || '',
-        effort: ds.effort || 'moderate'
-      }
-    };
-    asRenderStart();
-    asShowReview();
-    closeCard(card);
-    return;
-  }
-
-  // Toggle open/close when clicking the card
-  card.classList.contains('open') ? closeCard(card) : openCard(card);
-});
-
-
-  const backBtn    = document.getElementById('roomScreenBack');
-  const progFill   = document.getElementById('roomProgressFill');
-  const progPctEl  = document.getElementById('roomProgressPct');
-  const progLabel  = document.getElementById('roomProgressLabel');
-
-  const sortBtn    = document.getElementById('roomSortBtn');
-  const sortMenu   = document.getElementById('roomSortMenu');
-  const dropdown   = sortBtn?.closest('.dropdown');
-
-
-  // wire: clicking room cards opens this screen
-// ✅ ONE listener on the grid that works for all current/future cards
-(function bindRoomsGridClicks() {
-  const grid = document.querySelector('.rooms-grid');
-  if (!grid) return;
-
-  grid.addEventListener('click', (e) => {
-    const card = e.target.closest('.room-card');
-    if (!card || card.classList.contains('add-room-card')) return; // ignore the Add card
-
-    const roomKey = card.getAttribute('data-room');
-    if (roomKey && window.openRoomScreen) {
-      window.openRoomScreen(roomKey);
+    // One-time: handle check toggle, never open trays
+    const otBtn = e.target.closest('.ot-check');
+    if (otBtn) {
+      const pressed = otBtn.getAttribute('aria-pressed') === 'true';
+      otBtn.setAttribute('aria-pressed', String(!pressed));
+      card.classList.toggle('is-done', !pressed);
+      return;
     }
+    if (card.classList.contains('one-time')) return; // no tray/open on one-time
+
+    // Recurring: action tray buttons
+    if (e.target.closest('.ta-back'))  { closeCard(card); return; }
+    if (e.target.closest('.ta-done'))  { card.style.opacity=.6; setTimeout(()=>card.style.opacity=1,250); closeCard(card); return; }
+    if (e.target.closest('.ta-edit'))  { alert('Edit coming soon ✏️'); closeCard(card); return; }
+    if (e.target.closest('.ta-focus')) {
+      const ds = card.dataset;
+      const roomKey  = ds.room || '';
+      const roomName = roomKey ? roomKey.charAt(0).toUpperCase() + roomKey.slice(1) : '';
+      asOpen();
+      AS.currentTask = {
+        room: roomKey,
+        roomName,
+        task: { name: ds.name || '', lastCleaned: ds.last || '', frequency: ds.frequency || '', effort: ds.effort || 'moderate' }
+      };
+      asRenderStart(); asShowReview(); closeCard(card); return;
+    }
+
+    // Recurring: toggle tray
+    card.classList.contains('open') ? closeCard(card) : openCard(card);
   });
-})();
 
+  const backBtn   = document.getElementById('roomScreenBack');
+  const progFill  = document.getElementById('roomProgressFill');
+  const progPctEl = document.getElementById('roomProgressPct');
+  const progLabel = document.getElementById('roomProgressLabel');
 
-  // back to Rooms tab
+  const sortBtn   = document.getElementById('roomSortBtn');
+  const sortMenu  = document.getElementById('roomSortMenu');
+  const dropdown  = sortBtn?.closest('.dropdown');
+
+  // Click room cards to open detail screen
+  (function bindRoomsGridClicks() {
+    const grid = document.querySelector('.rooms-grid');
+    if (!grid) return;
+    grid.addEventListener('click', (e) => {
+      const card = e.target.closest('.room-card');
+      if (!card || card.classList.contains('add-room-card')) return;
+      const roomKey = card.getAttribute('data-room');
+      if (roomKey && window.openRoomScreen) window.openRoomScreen(roomKey);
+    });
+  })();
+
+  // Back
   backBtn.addEventListener('click', () => {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById('rooms-content').classList.add('active');
-    // also set Rooms tab button active
     const roomsTabBtn = document.querySelector('.tab[data-tab="rooms"]');
     if (roomsTabBtn) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -1373,69 +1405,51 @@ listEl.addEventListener('click', (e) => {
     }
   });
 
-  // sort dropdown behavior (reuse your style)
+  // Sort
   if (sortBtn && dropdown) {
-    sortBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle('open');
-    });
+    sortBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.classList.toggle('open'); });
     sortMenu.querySelectorAll('div[data-sort]').forEach(item => {
       item.addEventListener('click', () => {
         roomSort = item.getAttribute('data-sort');
-        sortBtn.textContent = 'Sort by ⌄'; // keep label
+        sortBtn.textContent = 'Sort by ⌄';
         dropdown.classList.remove('open');
-        // re-render with new sort
         const currentRoom = screenEl.dataset.roomKey;
         if (currentRoom) renderRoomScreen(currentRoom);
       });
     });
-    document.addEventListener('click', (e) => {
-      if (!dropdown.contains(e.target)) dropdown.classList.remove('open');
-    });
+    document.addEventListener('click', (e) => { if (!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
   }
 
-  // expose open function (so you can call from elsewhere if needed)
+  // Expose
   window.openRoomScreen = openRoomScreen;
 
   function openRoomScreen(roomKey) {
     screenEl.dataset.roomKey = roomKey;
     titleEl.textContent = roomKey.charAt(0).toUpperCase() + roomKey.slice(1);
-
-      // 👉 Show the unique image (or placeholder)
-
     setRoomImage(roomKey);
-
-    // switch tabs: show this screen
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     screenEl.classList.add('active');
-
     renderRoomScreen(roomKey);
   }
 
   function renderRoomScreen(roomKey) {
     const tasksForRoom = collectRoomTasks(roomKey);
-  
-    // average remaining% across tasks
+
+    // Progress header (average of recurrings; one-time will still be counted by your compute fn)
     const pctArray = tasksForRoom.map(t => computeProgressPercent(t.lastCleaned, t.frequency));
     const avg = pctArray.length ? Math.round(pctArray.reduce((a,b)=>a+b,0)/pctArray.length) : 0;
-    const colorClass = progressColorClass(avg); // 'progress-green' | 'progress-yellow' | 'progress-red'
-  
-    // fill progress UI (bar + fill use the same color class)
-    const barEl = progFill.parentElement; // .progress-bar
+    const colorClass = progressColorClass(avg);
+    const barEl = progFill.parentElement;
     barEl.classList.remove('progress-green','progress-yellow','progress-red');
     barEl.classList.add(colorClass);
-  
-    progFill.classList.remove('progress-green','progress-yellow','progress-red');
-    progFill.classList.add(colorClass);
+    progFill.className = `progress-fill ${colorClass}`;
     progFill.style.width = `${avg}%`;
-  
-    // hide/remove the text above the bar
     progPctEl.textContent = '';
     progLabel.textContent = '';
-  
-    // sort + render list
+
+    // List
     const sorted = sortTasks(tasksForRoom, roomSort);
-    listEl.innerHTML = renderTasks(sorted, roomKey);
+    listEl.innerHTML = sorted.map(t => renderRoomCard(t, roomKey)).join('');
     listEl.querySelectorAll('.task-item').forEach(c => {
       c.classList.remove('open');
       c.setAttribute('aria-expanded','false');
@@ -1445,7 +1459,6 @@ listEl.addEventListener('click', (e) => {
       closeCard(openCardRef);
     }
   }
-  
 
   function collectRoomTasks(roomKey) {
     const tasks = [];
@@ -1459,7 +1472,6 @@ listEl.addEventListener('click', (e) => {
   function sortTasks(arr, mode) {
     const EFFORT_ORDER = { low: 1, moderate: 2, high: 3 };
     const copy = arr.slice();
-
     if (mode === 'effort-asc' || mode === 'effort-desc') {
       copy.forEach(t => { if (!t.effort) t.effort = 'moderate'; });
       copy.sort((a,b) => {
@@ -1469,8 +1481,6 @@ listEl.addEventListener('click', (e) => {
       });
       return copy;
     }
-
-    // default: urgency (due first) -> smaller remaining% means more due
     copy.sort((a,b) => {
       const pa = computeProgressPercent(a.lastCleaned, a.frequency);
       const pb = computeProgressPercent(b.lastCleaned, b.frequency);
@@ -1479,22 +1489,22 @@ listEl.addEventListener('click', (e) => {
     return copy;
   }
 
-  function renderTasks(tasks, roomKey) {
-    if (!tasks.length) {
-      return `<p style="color:#666;margin-top:8px;">No tasks found for this room.</p>`;
+  // Render either one-time or recurring card
+  function renderRoomCard(t, roomKey) {
+    if (t.type === 'one-time') {
+      // relies on a TOP-LEVEL renderOneTimeTask(task, roomKey, dayKey)
+      return renderOneTimeTask(t, roomKey, t._day || '');
     }
-  
-    return tasks.map(t => {
-      const pct = Math.max(0, Math.min(100, Number(computeProgressPercent(t.lastCleaned, t.frequency) || 0)));
-      const colorClass = progressColorClass(pct);
-      const status =
-        pct <= 10 ? 'Overdue!' :
-        pct <= 33 ? 'Uh oh...' :
-        pct <= 66 ? 'Getting dusty...' :
-        'Looking good!';
-  
-      // NOTE: same structure/classes as Tasks-by-day cards (task-main + task-actions overlay)
-      return `
+
+    const pct = Math.max(0, Math.min(100, Number(computeProgressPercent(t.lastCleaned, t.frequency) || 0)));
+    const colorClass = progressColorClass(pct);
+    const status =
+      pct <= 10 ? 'Overdue!' :
+      pct <= 33 ? 'Uh oh...' :
+      pct <= 66 ? 'Getting dusty...' :
+      'Looking good!';
+
+    return `
       <div class="task-item"
            role="group" aria-expanded="false"
            data-room="${roomKey || ''}"
@@ -1503,27 +1513,21 @@ listEl.addEventListener('click', (e) => {
            data-last="${t.lastCleaned || ''}"
            data-frequency="${t.frequency || ''}"
            data-effort="${t.effort || 'moderate'}">
-  
         <div class="task-main">
           <div class="tm-row">
             <div class="tm-text">
               <div class="tm-title">${t.name}</div>
               <div class="tm-sub">cleaned ${t.lastCleaned || '—'} ago</div>
             </div>
-  
             <div class="tm-progress">
-            <div class="tm-track ${colorClass}">
-              <div class="tm-fill ${colorClass}" style="width:${pct}%;"></div>
+              <div class="tm-track ${colorClass}">
+                <div class="tm-fill ${colorClass}" style="width:${pct}%;"></div>
+              </div>
+              <div class="tm-status">${status}</div>
+              ${renderEffortDots(t.effort)}
             </div>
-            <div class="tm-status">${status}</div>
-            ${renderEffortDots(t.effort)}   <!-- ⬅️ same container -->
           </div>
-          
-          </div>
-  
-
         </div>
-  
         <div class="task-actions" aria-hidden="true">
           <button class="ta-back"  aria-label="Back">‹</button>
           <button class="ta-done"  aria-label="Mark Done">✔<span>Mark Done!</span></button>
@@ -1531,13 +1535,9 @@ listEl.addEventListener('click', (e) => {
           <button class="ta-edit"  aria-label="Edit">✎<span>Edit</span></button>
         </div>
       </div>`;
-    }).join('');
   }
-  
-  
-  
-  
 })();
+
 
 function setRoomImage(roomKey) {
   const slot = document.getElementById('roomImageSlot');
@@ -1691,9 +1691,33 @@ function buildOneTimePage2Once() {
         end:   oneTimeEndTime
       }
     };
-    console.log('Create one-time task:', data);
-    alert('One-time task created!');
-    closeOneTimeModal();
+  // Step 6 insert (safe version)
+const day  = currentDay || Object.keys(taskData)[0];
+const room = (data.room || 'bedroom').trim().toLowerCase();
+
+// ✅ ensure day bucket exists
+taskData[day] ||= {};
+
+// ✅ ensure room list exists
+taskData[day][room] ||= [];
+
+// push the new one-time task
+taskData[day][room].push({
+  type: 'one-time',
+  name: data.task || 'Untitled',
+  lastCleaned: '—',
+  frequency: '—',
+  progress: 0,
+  status: 'One-off task',
+  progressType: 'green',
+  effort: data.effort || 'low'
+});
+
+// refresh UI
+updateTasksForDay(day);
+closeOneTimeModal();
+
+
   });
 }
 
@@ -1893,6 +1917,33 @@ function asRenderStart() {
   begin.textContent = `Begin`;
 }
 
+function asPickLowEffortInRoom(roomKey) {
+  const rows = [];
+  Object.keys(taskData).forEach(dayKey => {
+    const tasks = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
+    tasks.forEach(t => {
+      const eff = (t.effort || 'moderate').toLowerCase();
+      const pct = computeProgressPercent(t.lastCleaned, t.frequency);
+      if (eff === 'low' || pct <= 33) {
+        rows.push({
+          room: roomKey,
+          roomName: roomKey.charAt(0).toUpperCase() + roomKey.slice(1),
+          task: t,
+          day: dayKey
+        });
+      }
+    });
+  });
+  rows.sort((a, b) => {
+    const pa = computeProgressPercent(a.task.lastCleaned, a.task.frequency);
+    const pb = computeProgressPercent(b.task.lastCleaned, b.task.frequency);
+    const ea = (a.task.effort || 'moderate') === 'low' ? 0 : 1;
+    const eb = (b.task.effort || 'moderate') === 'low' ? 0 : 1;
+    return (pa - pb) || (ea - eb);
+  });
+  return rows[0] || null;
+}
+
 function asPickLowEffort() {
   const dayKey = currentDay || Object.keys(taskData)[0];
   const collect = (keys) => {
@@ -1913,32 +1964,7 @@ function asPickLowEffort() {
     return out;
   };
 
-  function asPickLowEffortInRoom(roomKey) {
-    const rows = [];
-    Object.keys(taskData).forEach(dayKey => {
-      const tasks = (taskData[dayKey] && taskData[dayKey][roomKey]) || [];
-      tasks.forEach(t => {
-        const eff = (t.effort || 'moderate').toLowerCase();
-        const pct = computeProgressPercent(t.lastCleaned, t.frequency);
-        if (eff === 'low' || pct <= 33) {
-          rows.push({
-            room: roomKey,
-            roomName: roomKey.charAt(0).toUpperCase() + roomKey.slice(1),
-            task: t,
-            day: dayKey
-          });
-        }
-      });
-    });
-    rows.sort((a, b) => {
-      const pa = computeProgressPercent(a.task.lastCleaned, a.task.frequency);
-      const pb = computeProgressPercent(b.task.lastCleaned, b.task.frequency);
-      const ea = (a.task.effort || 'moderate') === 'low' ? 0 : 1;
-      const eb = (b.task.effort || 'moderate') === 'low' ? 0 : 1;
-      return (pa - pb) || (ea - eb);
-    });
-    return rows[0] || null;
-  }
+  
   
 
   // prefer current day; then all
@@ -2345,6 +2371,9 @@ pane.addEventListener('click', (e) => {
   const card = e.target.closest('.task-item');
   if (!card) return;
 
+  // 🚫 one-time cards never open trays
+  if (card.classList.contains('one-time')) return;
+
   // tray buttons
   if (e.target.closest('.ta-back')) { closeCard(card); return; }
   if (e.target.closest('.ta-done')) { /* your done logic */ closeCard(card); return; }
@@ -2678,6 +2707,10 @@ tasksPane?.addEventListener('click', (e) => {
   btn.setAttribute('aria-label', willCollapse ? 'Expand' : 'Collapse');
   btn.textContent = willCollapse ? 'v' : '^';
   setCollapsed(currentDay, section.dataset.room, willCollapse);
+  // inside tasksPane click handler where you toggle open/close
+if (card.classList.contains('one-time')) return; // no tray for one-time
+card.classList.contains('open') ? closeCard(card) : openCard(card);
+
 });
 
 });
@@ -2713,3 +2746,26 @@ function bindAllShuffleButtons() {
 
 // Call it once after the DOM is ready
 document.addEventListener('DOMContentLoaded', bindAllShuffleButtons);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const container = document.getElementById('tasks-for-day');
+  if (!container) return;
+
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ot-check');
+    if (!btn) return;
+
+    e.stopPropagation();                 // ✅ don’t trigger the card toggler
+
+    const card = btn.closest('.task-item.one-time');
+    if (!card) return;
+
+    // simple toggle “done” state (you can persist later)
+    const pressed = btn.getAttribute('aria-pressed') === 'true';
+    btn.setAttribute('aria-pressed', String(!pressed));
+    card.classList.toggle('is-done', !pressed);
+
+    // optional: visual feedback, e.g., fade or strike-through
+    // setTimeout(() => card.remove(), 250); // if you want to remove it
+  });
+});

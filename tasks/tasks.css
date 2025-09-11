@@ -2805,3 +2805,32 @@ textarea::placeholder {
     pointer-events: none;
   }
   
+  /* One-time card inherits .task-item visuals */
+.task-item.one-time .tm-progress { align-items: center; }
+.task-item.one-time .ot-bottom {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;   /* check button on the right */
+}
+
+/* Check button */
+.ot-check { background:none; border:none; padding:4px; cursor:pointer; display:grid; place-items:center; border-radius:50%; }
+.ot-circle { width:22px; height:22px; border-radius:50%; border:2px solid #1976d2; position:relative; transition:all .15s; }
+
+/* pressed (done) state */
+.task-item.one-time.is-done .ot-circle,
+.ot-check[aria-pressed="true"] .ot-circle { background:#1976d2; border-color:#1976d2; }
+
+/* checkmark glyph */
+.task-item.one-time.is-done .ot-circle::after,
+.ot-check[aria-pressed="true"] .ot-circle::after {
+    content:"✔"; position:absolute; inset:0; display:grid; place-items:center; font-size:14px; color:#fff;
+  }
+
+/* optional: slight fade on done */
+.task-item.one-time.is-done .task-main {
+  opacity: 0.85;
+}
+
+/* (optional) prevent tray open on one-time */
+.task-item.one-time .task-actions { display: none !important; }
