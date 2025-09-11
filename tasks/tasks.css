@@ -2169,7 +2169,7 @@ textarea::placeholder {
     gap: 10px;
   }
   #autoSanitizeModal #asTimeCancel { background:#e0e0e0; color:#333; border-radius:12px; }
-  #autoSanitizeModal #asTimeConfirm { composes: btn-primary; } /* if your build supports it */
+
   #autoSanitizeModal #asTimeConfirm { background:#1976d2; color:#fff; border-radius:12px; }
   
   /* ---------- TIMER PAGE ---------- */
@@ -2584,18 +2584,10 @@ textarea::placeholder {
   /* .room.is-collapsed .room-body { display: none; } */
   
   /* Smooth slide/opacity for the room content */
-  .room-body {
-    overflow: hidden;
-    max-height: none;
-    opacity: 1;
-    transition: max-height .25s ease, opacity .2s ease;
-  }
 
 
-.room.is-collapsed .room-body {
-    max-height: 0 !important;
-    opacity: 0;
-  }
+
+
   
   /* (Optional) disable motion for users who prefer reduced motion */
   @media (prefers-reduced-motion: reduce) {
@@ -2615,8 +2607,19 @@ textarea::placeholder {
   
   /* Smooth collapse/expand */
   .room-body{
-    overflow:hidden; transition:max-height .25s ease, opacity .2s ease;
+    overflow:hidden;
+    max-height:none;
+    opacity:1;
+    transition:max-height .28s cubic-bezier(.2,0,0,1), opacity .2s ease;
+    will-change: max-height, opacity;
+    display:grid;        /* avoids margin-collapsing jitters */
+    gap:10px;            /* replaces children margins for smoother height */
   }
+  .room.is-collapsed .room-body{
+    max-height:0;
+    opacity:0;
+  }
+  
   @media (prefers-reduced-motion: reduce){
     .room-body{ transition:none; }
   }
@@ -2653,3 +2656,107 @@ textarea::placeholder {
 /* Optional: separators */
 .task-actions .ta-done,
 .task-actions .ta-focus{ border-left:1px solid #0b3d5c44; }
+
+/* --- Task card (collapsed) --- */
+.task-item { position: relative; }
+
+/* Card shell to match the rounded tray vibe */
+.task-item .task-main{
+  background: linear-gradient(180deg,#fff,#f8fbff);
+  border: 1px solid #e8eef5;
+  border-radius: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+  padding: 12px 14px;
+}
+
+/* Top row */
+.tm-row{ display:flex; align-items:center; gap:12px; }
+.tm-text{ flex: 1 1 auto; min-width: 0; }
+.tm-title{ margin:0; font-size:16px; font-weight:800; color:#111; }
+.tm-sub{ margin:2px 0 0; font-size:12px; color:#6b7280; }
+
+/* Pill progress on right */
+.tm-progress{ flex: 0 0 52%; max-width: 52%; }
+.tm-track{
+  position:relative; height:12px; border-radius:999px; overflow:hidden;
+  background:#f1f5f9;
+}
+.tm-fill{ position:absolute; inset:0 auto 0 0; width:0; }
+.tm-status{
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  font-size:12px; color:#9aa5b1; pointer-events:none;
+}
+
+/* Use your existing color tokens */
+.tm-track.progress-yellow{ background:#fff8e1; }
+.tm-fill.progress-yellow { background:#f8c04e; }
+.tm-track.progress-green { background:#e8f5e9; }
+.tm-fill.progress-green  { background:#4caf50; }
+.tm-track.progress-red   { background:#fdecea; }
+.tm-fill.progress-red    { background:#f44336; }
+
+/* Bottom row */
+.tm-bottom{ margin-top:10px; display:flex; align-items:center; justify-content:space-between; }
+.tm-recur{
+  display:flex; align-items:center; gap:8px; color:#9aa5b1; font-size:13px;
+}
+.tm-recur::before{ content:'⟳'; opacity:.6; }
+
+/* Three little dots to the right */
+.tm-quick{ display:flex; gap:10px; }
+.qa-btn{ width:18px; height:18px; border-radius:50%; border:2px solid #0b3d5c; }
+.qa-btn.qa-dot { background:#0b3d5c; }
+.qa-btn.qa-ring{ background:transparent; }
+
+/* If you kept the open tray animation earlier */
+.task-item.open .task-main{ opacity:0; transform:translateY(-4px); pointer-events:none; transition:opacity .18s, transform .18s; }
+.task-item:not(.open) .task-actions{ opacity:0; transform:translateY(6px); pointer-events:none; transition:opacity .18s, transform .18s; }
+.task-item.open .task-actions{ opacity:1; transform:translateY(0); }
+
+/* Shared card height (tweak as needed) */
+:root { --task-card-h: 92px; }
+
+/* Stack normal + hidden tray in the same box */
+.task-item{
+  display: grid;
+  grid-template: "stack" / 1fr;
+}
+
+/* Both states occupy the same area/size */
+.task-item .task-main,
+.task-item .task-actions{
+  grid-area: stack;
+  border-radius: 18px;
+  border: 1px solid #e8eef5;
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+  min-height: var(--task-card-h);
+  background: linear-gradient(180deg,#fff,#f8fbff);
+  padding: 12px 14px;             /* same padding so edges align */
+}
+
+/* Action tray look (inside the same box) */
+.task-item .task-actions{
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr 1fr;
+  align-items: center;
+  background: #e8f0f8;            /* your tray bg */
+  opacity: 0;                      /* hidden by default */
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* Normal view fades out when open */
+.task-item .task-main{
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+/* Toggle */
+.task-item.open .task-main{
+  opacity: 0; transform: translateY(-4px); pointer-events: none;
+}
+.task-item.open .task-actions{
+  opacity: 1; transform: translateY(0); pointer-events: auto;
+}
+
+/* (Optional) hard align edges for tray buttons */
+.task-actions button{ height: calc(var(--task-card-h) - 2px); }

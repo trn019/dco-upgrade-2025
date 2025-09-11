@@ -1061,39 +1061,57 @@ function daysAgoFromText(text) {
       return copy;
     };
   
-    const renderTask = (task) => {
+    const renderTask = (task, roomKey, dayKey)  => {
       const pctRaw = computeProgressPercent(task.lastCleaned, task.frequency);
       const pct = Math.max(0, Math.min(100, Number(pctRaw || 0)));
-      const colorClass = progressColorClass(pct);
+      const colorClass = progressColorClass(pct);   // 'progress-green' | 'progress-yellow' | 'progress-red'
       const status = statusFromPercent(pct);
     
       return `
-      <div class="task-item" role="group" aria-expanded="false">
+      <div class="task-item"
+     role="group" aria-expanded="false"
+     data-room="${roomKey}"
+     data-day="${dayKey}"
+     data-name="${task.name}"
+     data-effort="${task.effort || 'moderate'}"
+     data-last="${task.lastCleaned || ''}"
+     data-frequency="${task.frequency || ''}">
         <div class="task-main">
-          <div class="task-top">
-            <div class="task-left">
-              <p class="task-name">${task.name}</p>
-              <p class="task-last">${task.lastCleaned || ''}</p>
+          <div class="tm-row">
+            <div class="tm-text">
+              <div class="tm-title">${task.name}</div>
+              <div class="tm-sub">cleaned ${task.lastCleaned || '—'} ago</div>
             </div>
-            <div class="task-right">
-              <p class="status-text">${status}</p>
-              <div class="progress-bar ${colorClass}">
-                <div class="progress-fill ${colorClass}" style="width:${pct}%"></div>
+    
+            <div class="tm-progress">
+              <div class="tm-track ${colorClass}">
+                <div class="tm-fill ${colorClass}" style="width:${pct}%;"></div>
+                <span class="tm-status">${status}</span>
               </div>
-              ${renderEffortDots(task.effort)}
             </div>
           </div>
-          <div class="task-frequency"><span>${task.frequency}</span></div>
+    
+          <div class="tm-bottom">
+            <div class="tm-recur"><span>${task.frequency || ''}</span></div>
+            <div class="tm-quick">
+              <button class="qa-btn qa-dot"   aria-label="Quick 1"></button>
+              <button class="qa-btn qa-dot"   aria-label="Quick 2"></button>
+              <button class="qa-btn qa-ring"  aria-label="Quick ring"></button>
+            </div>
+          </div>
         </div>
     
-        <div class="task-actions" hidden>
-          <button class="ta-back" aria-label="Back">‹</button>
-          <button class="ta-done" aria-label="Mark Done">✔<span>Mark Done!</span></button>
+        <!-- keep your action tray exactly as you already wired -->
+        <div class="task-actions" aria-hidden="true">
+
+          <button class="ta-back"  aria-label="Back">‹</button>
+          <button class="ta-done"  aria-label="Mark Done">✔<span>Mark Done!</span></button>
           <button class="ta-focus" aria-label="Focus">⌛<span>Focus</span></button>
-          <button class="ta-edit" aria-label="Edit">✎<span>Edit</span></button>
+          <button class="ta-edit"  aria-label="Edit">✎<span>Edit</span></button>
         </div>
       </div>`;
     };
+    
     
   
     // ✅ rooms always alphabetical
@@ -1123,13 +1141,19 @@ function daysAgoFromText(text) {
 
           </div>
           <div class="room-body" id="${bodyId}" ${collapsed ? 'hidden' : ''}>
-            ${sorted.map(renderTask).join('')}
+          ${sorted.map(t => renderTask(t, room, day)).join('')}
           </div>
         </section>`;
     });
     
   
     tasksContainer.innerHTML = html || '<p style="text-align:center;color:#666;margin-top:40px;">No tasks scheduled for this day!</p>';
+
+    tasksContainer.querySelectorAll('.task-item').forEach(c => {
+      c.classList.remove('open');
+      c.setAttribute('aria-expanded','false');
+      c.querySelector('.task-actions')?.setAttribute('aria-hidden','true');
+    });
 
     // after building each <section class="room ...">
 // if (collapsed) {
@@ -2223,49 +2247,46 @@ asShowReview();        // go straight to Review
 
 document.addEventListener('DOMContentLoaded', () => {
   const pane = document.getElementById('tasks-for-day');
-  pane.addEventListener('click', (e) => {
-    const btn = e.target.closest('.room-toggle');
-    if (!btn) return;
+pane.addEventListener('click', (e) => {
+  const card = e.target.closest('.task-item');
+  if (!card) return;
+
+  // tray buttons
+  if (e.target.closest('.ta-back')) { closeCard(card); return; }
+  if (e.target.closest('.ta-done')) { /* your done logic */ closeCard(card); return; }
+  if (e.target.closest('.ta-focus')) {
+    // Read details from the clicked card
+    const ds = card.dataset;
+    const roomKey  = ds.room || '';
+    const roomName = roomKey ? roomKey.charAt(0).toUpperCase() + roomKey.slice(1) : '';
   
-    const section = btn.closest('.room');
-    const body = section.querySelector('.room-body');
-    const willCollapse = !section.classList.contains('is-collapsed');
+    // Open the modal, then override the picked task with THIS one
+    asOpen();
+    AS.currentTask = {
+      room: roomKey,
+      roomName,
+      task: {
+        name: ds.name || '',
+        lastCleaned: ds.last || '',
+        frequency: ds.frequency || '',
+        effort: ds.effort || 'moderate'
+      }
+    };
   
-    if (willCollapse) {
-      // COLLAPSE: animate down to 0, then hide
-      body.hidden = false; // ensure measurable
-      body.style.maxHeight = body.scrollHeight + 'px';
-      requestAnimationFrame(() => {
-        body.style.maxHeight = '0px';
-        body.style.opacity = '0';
-        section.classList.add('is-collapsed');
-      });
-      body.addEventListener('transitionend', function onEnd() {
-        body.hidden = true;                    // optional semantic hide
-        body.removeEventListener('transitionend', onEnd);
-      }, { once: true });
-    } else {
-      // EXPAND: remove collapsed class first, then grow to content height
-      body.hidden = false;
-      section.classList.remove('is-collapsed');  // <- key
-      body.style.maxHeight = '0px';              // reset to start
-      requestAnimationFrame(() => {
-        body.style.maxHeight = body.scrollHeight + 'px';
-        body.style.opacity = '1';
-      });
-      body.addEventListener('transitionend', function onEnd() {
-        body.style.maxHeight = 'none';          // free height after expand
-        body.removeEventListener('transitionend', onEnd);
-      }, { once: true });
-    }
+    // Refresh UI and jump straight to Review
+    asRenderStart();
+    asShowReview();
   
-    // caret + aria
-    btn.setAttribute('aria-expanded', String(!willCollapse));
-    btn.setAttribute('aria-label', willCollapse ? 'Expand' : 'Collapse');
-    btn.textContent = willCollapse ? 'v' : '^';
+    closeCard(card);
+    return;
+  }
   
-    setCollapsed(currentDay, section.dataset.room, willCollapse);
-  });
+  if (e.target.closest('.ta-edit'))  { /* edit logic */ closeCard(card); return; }
+
+  // click the normal card to open/close
+  if (card.classList.contains('open')) closeCard(card);
+  else openCard(card);
+});
   
 
   
@@ -2500,59 +2521,69 @@ function asRingUpdate(remaining, totalSecs, mode) {
   RING.fg.style.stroke = (mode === 'break') ? '#4db6ac' : '#1976d2';
 }
 
-(() => {
-  const pane = document.getElementById('tasks-for-day');
-  if (!pane) return;
-  let openCard = null;
 
-  function open(card){
-    if (openCard && openCard !== card) close(openCard);
-    card.classList.add('open');
-    card.setAttribute('aria-expanded','true');
-    card.querySelector('.task-actions').hidden = false;
-    openCard = card;
+
+let openCardRef = null;
+
+function openCard(card) {
+  if (openCardRef && openCardRef !== card) closeCard(openCardRef);
+  card.classList.add('open');
+  card.setAttribute('aria-expanded', 'true');
+  card.querySelector('.task-actions')?.setAttribute('aria-hidden', 'false');
+  openCardRef = card;
+}
+
+function closeCard(card) {
+  card.classList.remove('open');
+  card.setAttribute('aria-expanded', 'false');
+  card.querySelector('.task-actions')?.setAttribute('aria-hidden', 'true');
+  if (openCardRef === card) openCardRef = null;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const tasksPane = document.getElementById('tasks-for-day');
+tasksPane?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.room-toggle');
+  if (!btn) return;
+
+  const section = btn.closest('.room');
+  const body = section.querySelector('.room-body');
+  const willCollapse = !section.classList.contains('is-collapsed');
+
+  if (willCollapse) {
+    // COLLAPSE smoothly
+    body.hidden = false;                             // make measurable
+    body.style.maxHeight = body.scrollHeight + 'px'; // lock current height
+    body.style.opacity = '1';
+    body.getBoundingClientRect();                    // <-- flush layout
+    body.style.maxHeight = '0px';
+    body.style.opacity = '0';
+
+    body.addEventListener('transitionend', function onEnd() {
+      body.hidden = true;                            // semantic hide AFTER anim
+      section.classList.add('is-collapsed');
+      body.removeEventListener('transitionend', onEnd);
+    }, { once: true });
+
+  } else {
+    // EXPAND smoothly
+    section.classList.remove('is-collapsed');        // stop forcing 0
+    body.hidden = false;
+    body.style.maxHeight = '0px';
+    body.style.opacity = '0';
+    body.getBoundingClientRect();                    // <-- flush layout
+    body.style.maxHeight = body.scrollHeight + 'px';
+    body.style.opacity = '1';
+
+    body.addEventListener('transitionend', function onEnd() {
+      body.style.maxHeight = 'none';                 // free growth
+      body.removeEventListener('transitionend', onEnd);
+    }, { once: true });
   }
-  function close(card){
-    card.classList.remove('open');
-    card.setAttribute('aria-expanded','false');
-    // let the fade finish but keep it interactive:
-    setTimeout(()=>{ card.querySelector('.task-actions').hidden = true; }, 180);
-    if (openCard === card) openCard = null;
-  }
 
-  pane.addEventListener('click', (e) => {
-    const card = e.target.closest('.task-item');
-    if (!card) return;
+  btn.setAttribute('aria-expanded', String(!willCollapse));
+  btn.setAttribute('aria-label', willCollapse ? 'Expand' : 'Collapse');
+  btn.textContent = willCollapse ? 'v' : '^';
+  setCollapsed(currentDay, section.dataset.room, willCollapse);
+});
 
-    // Action buttons
-    if (e.target.closest('.ta-back'))  { close(card); return; }
-    if (e.target.closest('.ta-done'))  {
-      // quick UX: flash done
-      card.style.opacity = .6;
-      setTimeout(()=>{ card.style.opacity = 1; }, 250);
-      close(card);
-      return;
-    }
-    if (e.target.closest('.ta-focus')) {
-      // jump to your Review page flow
-      if (!AS?.modal) { /* no-op if modal isn’t on this page */ }
-      asOpen(); asShowReview();
-      close(card);
-      return;
-    }
-    if (e.target.closest('.ta-edit'))  {
-      // hook up your edit modal if you have one
-      alert('Edit coming soon ✏️');
-      close(card);
-      return;
-    }
-
-    // Otherwise: toggle the tray
-    if (card.classList.contains('open')) close(card);
-    else open(card);
-  });
-
-  // Close any open tray when changing day
-  const _origUpdate = updateTasksForDay;
-  window.updateTasksForDay = function(day){ if (openCard) { close(openCard); } _origUpdate(day); };
-})();
+});
